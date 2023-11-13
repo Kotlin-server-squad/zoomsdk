@@ -22,7 +22,14 @@ repositories {
 }
 
 dependencies {
+    // Ktor client
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
+
+    // Zoom API
+    implementation(project(":zoom-api"))
+
+    // Tests
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("io.ktor:ktor-client-mock:$ktor_version")
 }

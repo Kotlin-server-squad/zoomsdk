@@ -19,24 +19,41 @@ application {
 }
 
 dependencies {
+    // Ktor server
     implementation("io.ktor:ktor-server-core-jvm")
-    implementation("io.ktor:ktor-server-auth-jvm")
-    implementation("io.ktor:ktor-client-core-jvm")
-    implementation("io.ktor:ktor-client-apache-jvm")
     implementation("io.ktor:ktor-server-host-common-jvm")
-    implementation("io.ktor:ktor-server-openapi")
-    implementation("io.ktor:ktor-server-swagger-jvm")
+    implementation("io.ktor:ktor-server-netty-jvm")
+
+    // Zoom client
+    implementation(project(":client"))
+
+    // Security
+    implementation("io.ktor:ktor-server-auth-jvm")
+    implementation("io.ktor:ktor-client-apache-jvm")
+
+    // Logging and tracing
     implementation("io.ktor:ktor-server-call-logging-jvm")
     implementation("io.ktor:ktor-server-call-id-jvm")
+
+    // Metrics
     implementation("io.ktor:ktor-server-metrics-jvm")
     implementation("io.ktor:ktor-server-metrics-micrometer-jvm")
     implementation("io.micrometer:micrometer-registry-prometheus:$prometeus_version")
+
+    // Swagger
+    implementation("io.ktor:ktor-server-openapi")
+    implementation("io.ktor:ktor-server-swagger-jvm")
+
+    // Serialization
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
+
+    // Persistence
     implementation("org.postgresql:postgresql:$postgres_version")
-    implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("io.ktor:ktor-server-config-yaml:2.3.5")
+
+    // Tests
     testImplementation("com.h2database:h2:$h2_version")
     testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
