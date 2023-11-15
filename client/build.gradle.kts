@@ -3,8 +3,9 @@ val kotlin_version: String by project
 val logback_version: String by project
 
 plugins {
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm")
     id("io.ktor.plugin") version "2.3.5"
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 group = "zoomsdk.kotlinserversquad.com"
@@ -22,9 +23,15 @@ repositories {
 }
 
 dependencies {
+    // Core dependencies
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+
     // Ktor client
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-client-logging:$ktor_version")
 
     // Zoom API
     implementation(project(":zoom-api"))

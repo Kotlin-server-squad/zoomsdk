@@ -8,9 +8,9 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.9.10" apply false
+    kotlin("jvm") version "1.9.20" apply false
     id("io.ktor.plugin") version "2.3.5" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20" apply false
     id("org.openapi.generator") version "6.6.0" apply false
 }
 
