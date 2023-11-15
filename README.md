@@ -47,6 +47,6 @@ val meetings = client.meetings().listScheduled(userAuthorization.accessToken)
 The access token expires after a certain period of time. You can use the refresh token to get a new access token as follows:
 
 ```kotlin
-val refreshedUserAuthorization = client.auth().reauthorizeUser(userAuthorization.refreshToken)
+val refreshedUserAuthorization = client.auth().refreshUserAuthorization(userAuthorization.refreshToken)
 println("New access token: ${refreshedUserAuthorization.accessToken}, New refresh token: ${refreshedUserAuthorization.refreshToken}")
 ```

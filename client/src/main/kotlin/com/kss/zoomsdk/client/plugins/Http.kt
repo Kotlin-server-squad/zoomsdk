@@ -5,6 +5,7 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import java.util.*
+import kotlin.coroutines.cancellation.CancellationException
 
 class Http(config: ZoomClientConfig, val client: HttpClient) {
     companion object {
@@ -26,7 +27,7 @@ class Http(config: ZoomClientConfig, val client: HttpClient) {
         body: Any?,
         accessToken: String? = null
     ): Result<T> {
-        return runCatching {
+        return runCoCatching {
             client.post(url) {
                 header(AUTHORIZATION_HEADER, authHeader(accessToken))
                 header(CONTENT_TYPE_HEADER, contentType)
@@ -37,4 +38,14 @@ class Http(config: ZoomClientConfig, val client: HttpClient) {
 
     fun authHeader(accessToken: String? = null): String =
         accessToken?.let { "Bearer $it" } ?: "Basic $authToken"
+
+    suspend fun<T, R> T.runCoCatching(block: suspend T.() -> R): Result<R> {
+        return try {
+            Result.success(block())
+        } catch(e: CancellationException) {
+            throw e
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
 }
