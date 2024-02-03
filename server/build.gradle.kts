@@ -3,7 +3,7 @@ val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 
-val prometeus_version: String by project
+val prometheus_version: String by project
 val postgres_version: String by project
 val h2_version: String by project
 
@@ -38,7 +38,7 @@ dependencies {
     // Metrics
     implementation("io.ktor:ktor-server-metrics-jvm")
     implementation("io.ktor:ktor-server-metrics-micrometer-jvm")
-    implementation("io.micrometer:micrometer-registry-prometheus:$prometeus_version")
+    implementation("io.micrometer:micrometer-registry-prometheus:$prometheus_version")
 
     // Swagger
     implementation("io.ktor:ktor-server-openapi")

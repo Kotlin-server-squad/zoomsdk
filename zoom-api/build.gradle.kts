@@ -1,12 +1,6 @@
-val ktor_version: String by project
-val coroutines_version: String by project
 
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
+plugins {
+    id("org.openapi.generator")
 }
 
 tasks.register<Exec>("generateSwaggerCode") {

@@ -8,9 +8,9 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.9.20" apply false
-    id("io.ktor.plugin") version "2.3.5" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20" apply false
+    kotlin("jvm") version "1.9.22" apply false
+    id("io.ktor.plugin") version "2.3.8" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22" apply false
     id("org.openapi.generator") version "6.6.0" apply false
 }
 
@@ -21,6 +21,9 @@ allprojects {
     repositories {
         mavenCentral()
     }
+}
+
+subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
