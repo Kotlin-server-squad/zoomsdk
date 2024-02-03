@@ -12,7 +12,7 @@ In order to use the SDK, you need to have the following:
 ## Usage
 Using your app's client ID and client secret, you can create a Zoom SDK instance as follows:
 ```kotlin
-import com.kss.zoomsdk.client.ZoomClient
+import com.kss.zoomsdk.auth.ZoomClient
 
 val client = ZoomClient.create(
     clientId = "your-client-id",

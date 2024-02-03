@@ -1,5 +1,4 @@
 rootProject.name = "zoomsdk"
 
+include(":authorization")
 include(":client")
-include(":server")
-include(":zoom-api")

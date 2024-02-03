@@ -1,4 +1,4 @@
-package com.kss.zoomsdk.client
+package com.kss.zoomsdk.auth
 
 @JvmInline
 value class ClientId(val value: String)
@@ -6,4 +6,4 @@ value class ClientId(val value: String)
 @JvmInline
 value class ClientSecret(val value: String)
 
-class ZoomClientException(cause: Throwable) : RuntimeException(cause)
+class AuthorizationException(cause: Throwable) : RuntimeException(cause)

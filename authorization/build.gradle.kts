@@ -5,6 +5,9 @@ plugins {
 }
 
 dependencies {
+    // Project
+    implementation(project(":client"))
+    
     // Core dependencies
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
