@@ -1,7 +1,7 @@
-package com.kss.zoomsdk.auth.config
+package com.kss.zoom.auth.config
 
-import com.kss.zoomsdk.auth.ClientId
-import com.kss.zoomsdk.auth.ClientSecret
+import com.kss.zoom.auth.ClientId
+import com.kss.zoom.auth.ClientSecret
 
 data class AuthorizationConfig(
     val clientId: ClientId,

@@ -1,9 +1,9 @@
-package com.kss.zoomsdk.auth
+package com.kss.zoom.auth
 
-import com.kss.zoomsdk.auth.Http.toUserAuthorization
-import com.kss.zoomsdk.auth.config.AuthorizationConfig
-import com.kss.zoomsdk.client.WebClient
-import com.kss.zoomsdk.client.WebClient.Companion.FORM_URL_ENCODED_CONTENT_TYPE
+import com.kss.zoom.auth.Http.toUserAuthorization
+import com.kss.zoom.auth.config.AuthorizationConfig
+import com.kss.zoom.client.WebClient
+import com.kss.zoom.client.WebClient.Companion.FORM_URL_ENCODED_CONTENT_TYPE
 import io.ktor.client.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -39,12 +39,8 @@ interface IAuthorization {
 class Authorization(private val config: AuthorizationConfig, private val client: WebClient) : IAuthorization {
 
     companion object {
-        fun create(config: AuthorizationConfig): Authorization {
-            return Authorization(config, WebClient.create())
-        }
-
-        fun create(config: AuthorizationConfig, httpClient: HttpClient): Authorization {
-            return Authorization(config, WebClient.create(httpClient))
+        fun create(config: AuthorizationConfig, httpClient: HttpClient? = null): Authorization {
+            return Authorization(config, httpClient?.let { WebClient.create(it) } ?: WebClient.create())
         }
     }
 

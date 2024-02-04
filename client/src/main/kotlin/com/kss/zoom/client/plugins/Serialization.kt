@@ -1,4 +1,4 @@
-package com.kss.zoomsdk.client.plugins
+package com.kss.zoom.client.plugins
 
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*

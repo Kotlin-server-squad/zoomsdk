@@ -1,4 +1,4 @@
-package com.kss.zoomsdk.auth
+package com.kss.zoom.auth
 
 @JvmInline
 value class ClientId(val value: String)

@@ -1,6 +1,6 @@
-package com.kss.zoomsdk.auth
+package com.kss.zoom.auth
 
-import com.kss.zoomsdk.auth.config.AuthorizationConfig
+import com.kss.zoom.auth.config.AuthorizationConfig
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*

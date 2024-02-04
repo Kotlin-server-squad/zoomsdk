@@ -4,5 +4,6 @@ plugins {
 
 dependencies {
     // Project
-    implementation(project(":client"))
+    implementation(project(":authorization"))
+    implementation(project(":meetings"))
 }

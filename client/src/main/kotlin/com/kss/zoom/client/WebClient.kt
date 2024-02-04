@@ -1,7 +1,7 @@
-package com.kss.zoomsdk.client
+package com.kss.zoom.client
 
-import com.kss.zoomsdk.client.plugins.configureLogging
-import com.kss.zoomsdk.client.plugins.configureSerialization
+import com.kss.zoom.client.plugins.configureLogging
+import com.kss.zoom.client.plugins.configureSerialization
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
