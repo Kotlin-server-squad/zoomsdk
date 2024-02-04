@@ -23,27 +23,27 @@ allprojects {
     }
 }
 
+val javaVersion = 17
+
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
+
     configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
         jvmToolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
+            languageVersion.set(JavaLanguageVersion.of(javaVersion))
         }
     }
     tasks.withType<Test> {
         useJUnitPlatform()
-        reports {
-            junitXml.isOutputPerTestCase = true
-        }
-        this.testLogging {
-            this.showStandardStreams = true
+        testLogging {
+            events("passed", "skipped", "failed")
         }
     }
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
-            jvmTarget = "17"
+            jvmTarget = "$javaVersion"
         }
     }
 }

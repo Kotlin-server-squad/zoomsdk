@@ -1,5 +1,6 @@
 package com.kss.zoomsdk.auth
 
+import com.kss.zoomsdk.auth.Http.toUserAuthorization
 import com.kss.zoomsdk.auth.config.AuthorizationConfig
 import com.kss.zoomsdk.client.WebClient
 import com.kss.zoomsdk.client.WebClient.Companion.FORM_URL_ENCODED_CONTENT_TYPE
@@ -9,7 +10,6 @@ import kotlinx.serialization.Serializable
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.time.Instant
 
 interface IAuthorization {
     /**
@@ -18,7 +18,7 @@ interface IAuthorization {
      * @return User authorization as a pair of access and refresh tokens.
      * @throws AuthorizationException
      */
-    suspend fun authorizeUser(code: String): UserAuthorization
+    suspend fun authorizeUser(code: AuthorizationCode): UserAuthorization
 
     /**
      * Refresh the user authorization with the given refresh token.
@@ -26,50 +26,50 @@ interface IAuthorization {
      * @return Renewed user authorization as a pair of access and refresh tokens.
      * @throws AuthorizationException
      */
-    suspend fun refreshUserAuthorization(refreshToken: String): UserAuthorization
+    suspend fun refreshUserAuthorization(refreshToken: RefreshToken): UserAuthorization
 
     /**
      * Get the authorization URL to redirect the user to.
      * @param callbackUrl The URL to redirect the user to after authorization.
      * @return The authorization URL.
      */
-    fun getAuthorizationUrl(callbackUrl: String): URL
+    fun getAuthorizationUrl(callbackUrl: URL): URL
 }
 
 class Authorization(private val config: AuthorizationConfig, private val client: WebClient) : IAuthorization {
 
     companion object {
-        fun create(config: AuthorizationConfig): IAuthorization {
+        fun create(config: AuthorizationConfig): Authorization {
             return Authorization(config, WebClient.create())
         }
 
-        fun create(config: AuthorizationConfig, httpClient: HttpClient): IAuthorization {
+        fun create(config: AuthorizationConfig, httpClient: HttpClient): Authorization {
             return Authorization(config, WebClient.create(httpClient))
         }
     }
 
     private val oauthTokenUrl = "${config.baseUrl}/oauth/token"
 
-    override suspend fun authorizeUser(code: String): UserAuthorization =
-        client.post<Zoom.AccessTokenResponse>(
+    override suspend fun authorizeUser(code: AuthorizationCode): UserAuthorization =
+        client.post<Http.UserAuthorizationResponse>(
             url = oauthTokenUrl,
-            token = code,
+            token = code.value,
             contentType = FORM_URL_ENCODED_CONTENT_TYPE,
             body = "grant_type=authorization_code&code=$code"
-        ).map { it.toUserAuthorization() }.getOrElse { throw AuthorizationException(it) }
+        ).toUserAuthorization()
 
-    override suspend fun refreshUserAuthorization(refreshToken: String): UserAuthorization =
-        client.post<Zoom.AccessTokenResponse>(
+    override suspend fun refreshUserAuthorization(refreshToken: RefreshToken): UserAuthorization =
+        client.post<Http.UserAuthorizationResponse>(
             url = oauthTokenUrl,
-            body = "grant_type=refresh_token&refresh_token=$refreshToken",
+            body = "grant_type=refresh_token&refresh_token=${refreshToken.value}",
             contentType = FORM_URL_ENCODED_CONTENT_TYPE,
-        ).map { it.toUserAuthorization() }.getOrElse { throw AuthorizationException(it) }
+        ).toUserAuthorization()
 
-    override fun getAuthorizationUrl(callbackUrl: String): URL =
+    override fun getAuthorizationUrl(callbackUrl: URL): URL =
         URL(
-            "${config.baseUrl}/oauth/authorize?response_type=code&client_id=${config.clientId}&redirect_uri=${
+            "${config.baseUrl}/oauth/authorize?response_type=code&client_id=${config.clientId.value}&redirect_uri=${
                 encode(
-                    callbackUrl
+                    callbackUrl.toString()
                 )
             }"
         )
@@ -78,27 +78,22 @@ class Authorization(private val config: AuthorizationConfig, private val client:
         URLEncoder.encode(value, StandardCharsets.UTF_8)
 }
 
-private object Zoom {
+private object Http {
     @Serializable
-    data class AccessTokenResponse(
+    data class UserAuthorizationResponse(
         @SerialName("access_token") val accessToken: String,
         @SerialName("token_type") val tokenType: String,
         @SerialName("refresh_token") val refreshToken: String,
-        @SerialName("scope") val scope: String
+        @SerialName("expires_in") val expiresIn: Long
     ) {
         fun toUserAuthorization(): UserAuthorization {
             return UserAuthorization(
-                accessToken = accessToken,
-                refreshToken = refreshToken,
-                expiresAt = Instant.now().epochSecond + 60 * 60
+                accessToken = AccessToken(accessToken, expiresIn),
+                refreshToken = RefreshToken(refreshToken)
             )
-
         }
     }
-}
 
-data class UserAuthorization(
-    val accessToken: String,
-    val refreshToken: String,
-    val expiresAt: Long
-)
+    fun Result<UserAuthorizationResponse>.toUserAuthorization(): UserAuthorization =
+        map { it.toUserAuthorization() }.getOrElse { throw AuthorizationException(it) }
+}
