@@ -7,16 +7,22 @@ import com.kss.zoom.meetings.IMeetings
 import com.kss.zoom.meetings.Meetings
 import io.ktor.client.*
 
-class Zoom private constructor(private val authorization: IAuthorization) {
+class Zoom private constructor(private val authorization: IAuthorization, private val meetings: IMeetings) {
 
     fun auth(): IAuthorization = authorization
 
+    fun meetings(): IMeetings = meetings
+
     companion object {
         fun create(clientId: String, clientSecret: String, httpClient: HttpClient? = null): Zoom {
+            val authorization = Authorization.create(
+                AuthorizationConfig.create(clientId, clientSecret), httpClient
+            )
+            val meetings = Meetings.create(authorization)
+
             return Zoom(
-                authorization = Authorization.create(
-                    AuthorizationConfig.create(clientId, clientSecret), httpClient
-                )
+                authorization,
+                meetings
                 // Other modules will be added here
             )
         }

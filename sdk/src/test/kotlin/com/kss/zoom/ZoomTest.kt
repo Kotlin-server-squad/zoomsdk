@@ -25,12 +25,14 @@ class ZoomTest {
     fun `should load`() {
         val zoom = Zoom.create("clientId", "clientSecret")
         assertNotNull(zoom.auth())
+        assertNotNull(zoom.meetings())
     }
 
     @Test
     fun `should load with custom http client`() {
         val zoom = Zoom.create("clientId", "clientSecret", httpClient)
         assertNotNull(zoom.auth())
+        assertNotNull(zoom.meetings())
     }
 
     @Test
