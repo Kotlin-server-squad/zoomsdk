@@ -1,6 +1,7 @@
 package com.kss.zoom.auth
 
 import com.kss.zoom.auth.config.AuthorizationConfig
+import com.kss.zoom.call
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -99,7 +100,7 @@ class AuthorizationTest {
     @Test
     fun `should authorize user`() = runBlocking {
         verifyUserAuthorization(
-            actual = authorization.authorizeUser(AuthorizationCode(AUTHORIZATION_CODE)),
+            actual = call { authorization.authorizeUser(AuthorizationCode(AUTHORIZATION_CODE)) },
             expected = UserAuthorization(
                 accessToken = AccessToken("accessToken", 3599L),
                 refreshToken = RefreshToken("refreshToken")
@@ -119,7 +120,7 @@ class AuthorizationTest {
     @Test
     fun `should refresh user authorization`() = runBlocking {
         verifyUserAuthorization(
-            actual = authorization.refreshUserAuthorization(RefreshToken("refreshToken")),
+            actual = call { authorization.refreshUserAuthorization(RefreshToken("refreshToken")) },
             expected = UserAuthorization(
                 accessToken = AccessToken("newAccessToken", 3599L),
                 refreshToken = RefreshToken("newRefreshToken")

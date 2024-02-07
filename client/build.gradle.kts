@@ -10,4 +10,6 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-logging:$ktor_version")
 
+    // Project
+    implementation(project(":common"))
 }
