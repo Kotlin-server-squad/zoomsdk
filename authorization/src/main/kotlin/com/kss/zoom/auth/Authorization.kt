@@ -18,7 +18,6 @@ interface IAuthorization {
      * Authorize a user with the given code and exchange it for a pair of access and refresh tokens.
      * @param code The code received from Zoom OAuth callback.
      * @return User authorization as a pair of access and refresh tokens.
-     * @throws AuthorizationException
      */
     suspend fun authorizeUser(code: AuthorizationCode): CallResult<UserAuthorization>
 
@@ -26,7 +25,6 @@ interface IAuthorization {
      * Refresh the user authorization with the given refresh token.
      * @param refreshToken The refresh token received from Zoom OAuth callback.
      * @return Renewed user authorization as a pair of access and refresh tokens.
-     * @throws AuthorizationException
      */
     suspend fun refreshUserAuthorization(refreshToken: RefreshToken): CallResult<UserAuthorization>
 

@@ -19,4 +19,3 @@ data class UserAuthorization(
     val refreshToken: RefreshToken
 )
 
-class AuthorizationException(cause: Throwable) : RuntimeException(cause)
