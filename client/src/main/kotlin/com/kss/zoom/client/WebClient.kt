@@ -82,9 +82,9 @@ class WebClient private constructor(val client: HttpClient) {
                 when (response.status.value) {
                     in 200..299 -> Success(response.body())
                     400 -> Failure.BadRequest(response.body())
-                    401, 403 -> Failure.Unauthorized(response.body())
-                    404 -> Failure.NotFound(response.body())
-                    429 -> Failure.TooManyRequests(response.body())
+                    401, 403 -> Failure.Unauthorized
+                    404 -> Failure.NotFound
+                    429 -> Failure.TooManyRequests
                     else -> Failure.Error(response.body())
                 }
             }

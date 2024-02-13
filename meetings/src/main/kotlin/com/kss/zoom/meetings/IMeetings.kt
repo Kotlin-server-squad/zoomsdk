@@ -3,7 +3,6 @@ package com.kss.zoom.meetings
 import com.kss.zoom.CallResult
 import com.kss.zoom.auth.AccessToken
 import com.kss.zoom.auth.IAuthorization
-import com.kss.zoom.auth.AuthorizationException
 
 interface IMeetings {
     fun auth(): IAuthorization
