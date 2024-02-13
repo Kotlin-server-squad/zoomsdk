@@ -84,17 +84,71 @@ you can create a Zoom SDK instance with only the Meetings module.
 
 ```kotlin
 import com.kss.zoomsdk.Zoom
+import com.kss.zoom.call
 
-val meetingsOnly = Zoom.meetings(
+val meetingsSDK = Zoom.meetings(
     clientId = "your-client-id",
     clientSecret = "your-client-secret"
 )
 
 // Get the authorization URL
-val authUrl = meetingsOnly.auth().getAuthorizationUrl("https://your-redirect-url")
+val authUrl = meetingsSDK.auth().getAuthorizationUrl("https://your-redirect-url")
 
 // Finish the authorization process and make API calls with the access token
-val meetings = meetingsOnly.listScheduled(userAuthorization.accessToken)
+val meetings = call { meetingsSDK.listScheduled(userAuthorization.accessToken) }
+```
+
+## Exception Handling
+The SDK accommodates for various error scenarios and provides a way to handle them.
+
+You can choose your preferred style of error handling.
+
+### Functional Style
+
+```kotlin
+import com.kss.zoom.CallResult.*
+
+when (val result = meetingsSDK.listScheduled(userAuthorization.accessToken)) {
+    is Success -> {
+        // Handle the success case
+        val meetings = result.value
+    }
+    is Failure -> {
+        // Handle the failure case
+        val errorMessage = result.message
+        
+        // Or a more fine-grained error handling
+        when (result) {
+            is BadRequest -> {
+                // Handle invalid input
+            }
+            is Unauthorized -> {
+                // Has your access token expired?
+            }
+            is NotFound -> {
+                // Handle unknown errors
+            }
+            is TooManyRequests -> {
+                // Try later?
+            }
+            is Error -> {
+                // Just fail
+            }
+        }
+    }
+}
+```
+
+## Try-Catch Style
+Tired of pattern matching? You can use the good old try-catch style.
+
+```kotlin
+import com.kss.zoom.call
+
+// This will throw an exception if the API call fails
+val scheduledMeetings = call { meetingsSDK.listScheduled(userAuthorization.accessToken) }
+
+// Handle the happy path
 ```
 
 ## Building from Source Code

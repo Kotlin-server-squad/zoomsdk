@@ -1,6 +1,8 @@
 package com.kss.zoom.auth
 
+import com.kss.zoom.CallResult
 import com.kss.zoom.auth.config.AuthorizationConfig
+import com.kss.zoom.call
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -9,8 +11,7 @@ import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.URL
@@ -99,7 +100,7 @@ class AuthorizationTest {
     @Test
     fun `should authorize user`() = runBlocking {
         verifyUserAuthorization(
-            actual = authorization.authorizeUser(AuthorizationCode(AUTHORIZATION_CODE)),
+            actual = call { authorization.authorizeUser(AuthorizationCode(AUTHORIZATION_CODE)) },
             expected = UserAuthorization(
                 accessToken = AccessToken("accessToken", 3599L),
                 refreshToken = RefreshToken("refreshToken")
@@ -108,18 +109,21 @@ class AuthorizationTest {
     }
 
     @Test
-    fun `should reject unauthorized access`() {
-        assertThrows(AuthorizationException::class.java) {
-            runBlocking {
-                authorization.authorizeUser(AuthorizationCode("invalidCode"))
+    fun `should reject unauthorized access`(): Unit = runBlocking {
+        when (val result = authorization.authorizeUser(AuthorizationCode("invalidCode"))) {
+            is CallResult.Failure.Unauthorized -> {
+                assertThrows(IllegalStateException::class.java) {
+                    runBlocking { call { result } }
+                }
             }
+            else -> fail("Invalid result: $result")
         }
     }
 
     @Test
     fun `should refresh user authorization`() = runBlocking {
         verifyUserAuthorization(
-            actual = authorization.refreshUserAuthorization(RefreshToken("refreshToken")),
+            actual = call { authorization.refreshUserAuthorization(RefreshToken("refreshToken")) },
             expected = UserAuthorization(
                 accessToken = AccessToken("newAccessToken", 3599L),
                 refreshToken = RefreshToken("newRefreshToken")
@@ -128,11 +132,14 @@ class AuthorizationTest {
     }
 
     @Test
-    fun `should reject invalid refresh token`() {
-        assertThrows(AuthorizationException::class.java) {
-            runBlocking {
-                authorization.refreshUserAuthorization(RefreshToken("staleRefreshToken"))
+    fun `should reject invalid refresh token`(): Unit = runBlocking {
+        when (val result = authorization.refreshUserAuthorization(RefreshToken("staleRefreshToken"))) {
+            is CallResult.Failure.Unauthorized -> {
+                assertThrows(IllegalStateException::class.java) {
+                    runBlocking { call { result } }
+                }
             }
+            else -> fail("Invalid result: $result")
         }
     }
 

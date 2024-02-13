@@ -5,4 +5,5 @@ plugins {
 dependencies {
     // Project
     implementation(project(":authorization"))
+    implementation(project(":common"))
 }
