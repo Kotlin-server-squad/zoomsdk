@@ -98,8 +98,16 @@ val authCode = AuthorizationCode("code-sent-by-zoom")
 // Authorize the user with the auth code
 val userAuth = meetingsSDK.auth().authorizeUser(authCode).getOrThrow()
 
-// List scheduled meetings using the user's access token
-val meetings = meetingsSDK.listScheduled(userAuth.accessToken).getOrThrow()
+// List scheduled meetings of the user
+meetingsSDK.authorize(userAuth)
+val meetings = meetingsSDK.listScheduled().getOrThrow()
+
+// Or use the fluent API
+val meetings = meetingsSDK.authorize(userAuth).listScheduled().getOrThrow()
+
+// The authorize method only needs to be called once. It attaches the user authorization to the SDK instance.
+// You can then make multiple API calls without having to pass the user authorization again.
+val meeting = meetingsSDK.getMeeting("meetingId").getOrThrow()
 ```
 
 ## Exception Handling

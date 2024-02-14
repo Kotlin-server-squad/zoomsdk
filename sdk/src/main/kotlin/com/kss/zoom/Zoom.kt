@@ -1,7 +1,7 @@
 package com.kss.zoom
 
-import com.kss.zoom.auth.AuthorizationImpl
 import com.kss.zoom.auth.Authorization
+import com.kss.zoom.auth.AuthorizationImpl
 import com.kss.zoom.auth.config.AuthorizationConfig
 import com.kss.zoom.sdk.meetings.Meetings
 import com.kss.zoom.sdk.meetings.MeetingsImpl
