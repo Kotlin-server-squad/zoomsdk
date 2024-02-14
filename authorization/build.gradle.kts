@@ -6,4 +6,5 @@ dependencies {
     // Project
     implementation(project(":client"))
     implementation(project(":common"))
+    testImplementation(project(":common", "testCommonRuntime"))
 }

@@ -86,16 +86,20 @@ you can create a Zoom SDK instance with only the Meetings module.
 import com.kss.zoomsdk.Zoom
 import com.kss.zoom.call
 
-val meetingsSDK = Zoom.meetings(
-    clientId = "your-client-id",
-    clientSecret = "your-client-secret"
-)
+// Create a Zoom SDK to schedule and cancel meetings
+val meetingsSDK = Zoom.meetings("clientId", "clientSecret")
 
-// Get the authorization URL
-val authUrl = meetingsSDK.auth().getAuthorizationUrl("https://your-redirect-url")
+// Authorize a user
+val authUrl = meetingsSDK.auth().getAuthorizationUrl(URL("http://localhost:8080/callback"))
 
-// Finish the authorization process and make API calls with the access token
-val meetings = call { meetingsSDK.listScheduled(userAuthorization.accessToken) }
+// Redirect the user to the authUrl and get the authorization code in the callback
+val authCode = AuthorizationCode("code-sent-by-zoom")
+
+// Authorize the user with the auth code
+val userAuth = meetingsSDK.auth().authorizeUser(authCode).getOrThrow()
+
+// List scheduled meetings using the user's access token
+val meetings = meetingsSDK.listScheduled(userAuth.accessToken).getOrThrow()
 ```
 
 ## Exception Handling
@@ -105,48 +109,32 @@ You can choose your preferred style of error handling.
 
 ### Functional Style
 
-```kotlin
-import com.kss.zoom.CallResult.*
+All API calls return a `kotlin.Result` type, which can be used to handle the success and failure cases.
+It comes with a set of extension functions to make it easier to work with.
 
-when (val result = meetingsSDK.listScheduled(userAuthorization.accessToken)) {
-    is Success -> {
-        // Handle the success case
-        val meetings = result.value
+```kotlin
+
+val result = meetingsSDK.listScheduled(userAuth.accessToken)
+when {
+    result.isSuccess -> {
+        val scheduledMeetings = result.getOrThrow()
+        println("Scheduled meetings: $scheduledMeetings")
     }
-    is Failure -> {
-        // Handle the failure case
-        val errorMessage = result.message
-        
-        // Or a more fine-grained error handling
-        when (result) {
-            is BadRequest -> {
-                // Handle invalid input
-            }
-            is Unauthorized -> {
-                // Has your access token expired?
-            }
-            is NotFound -> {
-                // Handle unknown errors
-            }
-            is TooManyRequests -> {
-                // Try later?
-            }
-            is Error -> {
-                // Just fail
-            }
-        }
+
+    result.isFailure -> {
+        val exception = result.exceptionOrNull()
+        println("Failed to list scheduled meetings: $exception")
     }
 }
 ```
 
 ## Try-Catch Style
-Tired of pattern matching? You can use the good old try-catch style.
+Tired of pattern matching, or a constant calls to `getOrThrow()`? You can use the good old try-catch style.
 
 ```kotlin
-import com.kss.zoom.call
 
-// This will throw an exception if the API call fails
-val scheduledMeetings = call { meetingsSDK.listScheduled(userAuthorization.accessToken) }
+// This will throw a ZoomException if the API call fails
+val scheduledMeetings = call { meetingsSDK.listScheduled(userAuth.accessToken) }
 
 // Handle the happy path
 ```

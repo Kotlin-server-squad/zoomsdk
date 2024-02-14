@@ -1,8 +1,6 @@
 package com.kss.zoom.client
 
-import com.kss.zoom.CallResult
-import com.kss.zoom.CallResult.Failure
-import com.kss.zoom.CallResult.Success
+import com.kss.zoom.ZoomException
 import com.kss.zoom.client.plugins.configureLogging
 import com.kss.zoom.client.plugins.configureSerialization
 import io.ktor.client.*
@@ -31,7 +29,7 @@ class WebClient private constructor(val client: HttpClient) {
         url: String,
         contentType: String?,
         body: Any?
-    ): CallResult<T> =
+    ): Result<T> =
         runCoCatching {
             client.post(url) {
                 contentType(contentType)
@@ -39,13 +37,12 @@ class WebClient private constructor(val client: HttpClient) {
             }
         }
 
-
     suspend inline fun <reified T> post(
         url: String,
         token: String,
         contentType: String?,
         body: Any?
-    ): CallResult<T> =
+    ): Result<T> =
         runCoCatching {
             client.post(url) {
                 bearerAuth(token)
@@ -60,7 +57,7 @@ class WebClient private constructor(val client: HttpClient) {
         clientSecret: String,
         contentType: String?,
         body: Any?
-    ): CallResult<T> =
+    ): Result<T> =
         runCoCatching {
             client.post(url) {
                 contentType(ContentType.Application.Json)
@@ -76,23 +73,33 @@ class WebClient private constructor(val client: HttpClient) {
         return this
     }
 
-    suspend inline fun <reified T> runCoCatching(block: () -> HttpResponse): CallResult<T> {
+    suspend inline fun <reified T> runCoCatching(block: () -> HttpResponse): Result<T> {
         return try {
             block().let { response ->
                 when (response.status.value) {
-                    in 200..299 -> Success(response.body())
-                    400 -> Failure.BadRequest(response.body())
-                    401, 403 -> Failure.Unauthorized
-                    404 -> Failure.NotFound
-                    429 -> Failure.TooManyRequests
-                    else -> Failure.Error(response.body())
+                    in 200..299 -> Result.success(response.body())
+                    else -> {
+                        val message = when (response.status.value) {
+                            400 -> "Bad request: ${response.bodyAsText()}"
+                            401, 403 -> "Unauthorized access to the resource."
+                            404 -> "Not found"
+                            429 -> "Too many requests"
+                            else -> "Error: ${response.bodyAsText()}"
+                        }
+                        Result.failure(ZoomException(response.status.value, message))
+                    }
                 }
             }
         } catch (e: CancellationException) {
             // Re-throw the CancellationException to not treat it as an exceptional outcome
             throw e
         } catch (t: Throwable) {
-            Failure.Error(t.message ?: "Unknown error")
+            Result.failure(
+                ZoomException(
+                    HttpStatusCode.InternalServerError.value,
+                    t.message ?: "Internal server error"
+                )
+            )
         }
     }
 }

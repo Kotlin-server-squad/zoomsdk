@@ -1,6 +1,5 @@
 package com.kss.zoom.auth
 
-import com.kss.zoom.CallResult
 import com.kss.zoom.auth.Http.UserAuthorizationResponse
 import com.kss.zoom.auth.Http.toUserAuthorization
 import com.kss.zoom.auth.config.AuthorizationConfig
@@ -19,14 +18,14 @@ interface IAuthorization {
      * @param code The code received from Zoom OAuth callback.
      * @return User authorization as a pair of access and refresh tokens.
      */
-    suspend fun authorizeUser(code: AuthorizationCode): CallResult<UserAuthorization>
+    suspend fun authorizeUser(code: AuthorizationCode): Result<UserAuthorization>
 
     /**
      * Refresh the user authorization with the given refresh token.
      * @param refreshToken The refresh token received from Zoom OAuth callback.
      * @return Renewed user authorization as a pair of access and refresh tokens.
      */
-    suspend fun refreshUserAuthorization(refreshToken: RefreshToken): CallResult<UserAuthorization>
+    suspend fun refreshUserAuthorization(refreshToken: RefreshToken): Result<UserAuthorization>
 
     /**
      * Get the authorization URL to redirect the user to.
@@ -46,7 +45,7 @@ class Authorization(private val config: AuthorizationConfig, private val client:
 
     private val oauthTokenUrl = "${config.baseUrl}/oauth/token"
 
-    override suspend fun authorizeUser(code: AuthorizationCode): CallResult<UserAuthorization> =
+    override suspend fun authorizeUser(code: AuthorizationCode): Result<UserAuthorization> =
         client.post<UserAuthorizationResponse>(
             url = oauthTokenUrl,
             token = code.value,
@@ -54,7 +53,7 @@ class Authorization(private val config: AuthorizationConfig, private val client:
             body = "grant_type=authorization_code&code=$code"
         ).toUserAuthorization()
 
-    override suspend fun refreshUserAuthorization(refreshToken: RefreshToken): CallResult<UserAuthorization> =
+    override suspend fun refreshUserAuthorization(refreshToken: RefreshToken): Result<UserAuthorization> =
         client.post<UserAuthorizationResponse>(
             url = oauthTokenUrl,
             body = "grant_type=refresh_token&refresh_token=${refreshToken.value}",
@@ -90,9 +89,6 @@ private object Http {
         }
     }
 
-    fun CallResult<UserAuthorizationResponse>.toUserAuthorization(): CallResult<UserAuthorization> =
-        when {
-            this is CallResult.Success -> CallResult.Success(value.toUserAuthorization())
-            else -> this as CallResult.Failure
-        }
+    fun Result<UserAuthorizationResponse>.toUserAuthorization(): Result<UserAuthorization> =
+        this.map { it.toUserAuthorization() }
 }

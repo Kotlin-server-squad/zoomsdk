@@ -1,8 +1,8 @@
 package com.kss.zoom.auth
 
-import com.kss.zoom.CallResult
 import com.kss.zoom.auth.config.AuthorizationConfig
 import com.kss.zoom.call
+import com.kss.zoom.verifyFailure
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -11,7 +11,7 @@ import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.URL
@@ -110,13 +110,8 @@ class AuthorizationTest {
 
     @Test
     fun `should reject unauthorized access`(): Unit = runBlocking {
-        when (val result = authorization.authorizeUser(AuthorizationCode("invalidCode"))) {
-            is CallResult.Failure.Unauthorized -> {
-                assertThrows(IllegalStateException::class.java) {
-                    runBlocking { call { result } }
-                }
-            }
-            else -> fail("Invalid result: $result")
+        verifyFailure(HttpStatusCode.Unauthorized.value, "Unauthorized access to the resource.") {
+            authorization.authorizeUser(AuthorizationCode("invalidCode"))
         }
     }
 
@@ -133,20 +128,16 @@ class AuthorizationTest {
 
     @Test
     fun `should reject invalid refresh token`(): Unit = runBlocking {
-        when (val result = authorization.refreshUserAuthorization(RefreshToken("staleRefreshToken"))) {
-            is CallResult.Failure.Unauthorized -> {
-                assertThrows(IllegalStateException::class.java) {
-                    runBlocking { call { result } }
-                }
-            }
-            else -> fail("Invalid result: $result")
+        verifyFailure(HttpStatusCode.Unauthorized.value, "Unauthorized access to the resource.") {
+            authorization.refreshUserAuthorization(RefreshToken("staleRefreshToken"))
         }
     }
 
     @Test
     fun `should return correct authorization url`() {
         val callbackUrl = URL("http://localhost:8080/callback")
-        val expectedUrl = URL("https://zoom.us/oauth/authorize?response_type=code&client_id=clientId&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fcallback")
+        val expectedUrl =
+            URL("https://zoom.us/oauth/authorize?response_type=code&client_id=clientId&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fcallback")
         assertEquals(expectedUrl, authorization.getAuthorizationUrl(callbackUrl))
     }
 
