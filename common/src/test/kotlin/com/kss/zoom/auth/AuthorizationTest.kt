@@ -101,7 +101,7 @@ class AuthorizationTest {
     fun `should authorize user`() = runBlocking {
         verifyUserAuthorization(
             actual = call { authorization.authorizeUser(AuthorizationCode(AUTHORIZATION_CODE)) },
-            expected = UserAuthorization(
+            expected = UserTokens(
                 accessToken = AccessToken("accessToken", 3599L),
                 refreshToken = RefreshToken("refreshToken")
             )
@@ -119,7 +119,7 @@ class AuthorizationTest {
     fun `should refresh user authorization`() = runBlocking {
         verifyUserAuthorization(
             actual = call { authorization.refreshUserAuthorization(RefreshToken("refreshToken")) },
-            expected = UserAuthorization(
+            expected = UserTokens(
                 accessToken = AccessToken("newAccessToken", 3599L),
                 refreshToken = RefreshToken("newRefreshToken")
             )
@@ -141,7 +141,7 @@ class AuthorizationTest {
         assertEquals(expectedUrl, authorization.getAuthorizationUrl(callbackUrl))
     }
 
-    private fun verifyUserAuthorization(actual: UserAuthorization, expected: UserAuthorization) {
+    private fun verifyUserAuthorization(actual: UserTokens, expected: UserTokens) {
         assertEquals(expected, actual, "Invalid user authorization")
     }
 }

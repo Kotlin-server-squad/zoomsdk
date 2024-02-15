@@ -1,8 +1,11 @@
 package com.kss.zoom.sdk.meetings
 
-import com.kss.zoom.ZoomModule
-import com.kss.zoom.ZoomModuleBase
-import com.kss.zoom.auth.Authorization
+import com.kss.zoom.sdk.ZoomModule
+import com.kss.zoom.sdk.ZoomModuleBase
+import com.kss.zoom.auth.UserTokens
+import com.kss.zoom.client.WebClient
+import com.kss.zoom.toWebClient
+import io.ktor.client.*
 
 interface Meetings : ZoomModule {
 
@@ -16,9 +19,13 @@ interface Meetings : ZoomModule {
     suspend fun cancelScheduled(meetingId: Long): Result<ScheduledMeeting>
 }
 
-class MeetingsImpl private constructor(auth: Authorization) : ZoomModuleBase(auth), Meetings {
+class MeetingsImpl private constructor(
+    auth: UserTokens,
+    client: WebClient
+) : ZoomModuleBase(auth, client), Meetings {
     companion object {
-        fun create(authorization: Authorization): Meetings = MeetingsImpl(authorization)
+        fun create(auth: UserTokens, httpClient: HttpClient? = null): Meetings =
+            MeetingsImpl(auth, httpClient.toWebClient())
     }
 
     override suspend fun schedule(userId: String): Result<ScheduledMeeting> {

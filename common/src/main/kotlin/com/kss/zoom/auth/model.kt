@@ -14,7 +14,7 @@ data class AccessToken(val value: String, val expiresIn: Long)
 @JvmInline
 value class RefreshToken(val value: String)
 
-data class UserAuthorization(
+data class UserTokens(
     val accessToken: AccessToken,
     val refreshToken: RefreshToken
 )
