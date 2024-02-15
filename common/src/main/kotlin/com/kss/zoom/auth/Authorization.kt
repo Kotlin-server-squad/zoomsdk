@@ -51,7 +51,7 @@ class AuthorizationImpl(private val config: AuthorizationConfig, private val cli
             url = oauthTokenUrl,
             token = code.value,
             contentType = FORM_URL_ENCODED_CONTENT_TYPE,
-            body = "grant_type=authorization_code&code=$code"
+            body = "grant_type=authorization_code&code=${code.value}"
         ).toUserTokens()
 
     override suspend fun refreshUserAuthorization(refreshToken: RefreshToken): Result<UserTokens> =
