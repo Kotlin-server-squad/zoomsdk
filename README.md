@@ -93,6 +93,39 @@ val meetingsSDK = zoom.meetings(userTokens)
 val usersSDK = zoom.users(userTokens)
 ```
 
+## Non-Blocking vs Blocking Calls
+The SDK provides both non-blocking and blocking API calls. You can choose the style that fits your use case.
+
+### Non-Blocking
+All API calls are suspendable functions, which means they must be called from a coroutine.
+
+```kotlin
+import com.kss.zoom.utils.call
+
+// This is a non-blocking call via a coroutine.
+val scheduledMeetings = call { meetingsSDK.listScheduled() }
+```
+If it suits you better, you can use the `future` function to get a `CompletableFuture`.
+
+```kotlin
+import com.kss.zoom.utils.future
+
+// This is a non-blocking call, it returns a CompletableFuture.
+// It can be invoked from a coroutine or from a non-coroutine context.
+val scheduledMeetings = future { meetingsSDK.listScheduled() }
+```
+
+### Blocking
+If you prefer to use blocking calls, you can use the `callSync` function.
+
+```kotlin
+import com.kss.zoom.utils.callSync
+
+// This call blocks the current thread until the result is available.
+// It is designed to be called from a non-coroutine context.
+val scheduledMeetings = callSync { meetingsSDK.listScheduled() }
+```
+
 ## Exception Handling
 The SDK accommodates for various error scenarios and provides a way to handle them.
 
