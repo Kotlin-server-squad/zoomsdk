@@ -31,11 +31,6 @@ val meetingsSDK = zoom.meetings(userTokens)
 
 // Use the SDK, for example you can list scheduled meetings of the user
 val meetings = meetingsSDK.listScheduled().getOrThrow()
-
-// Once the access token expires, use the refresh token to get a new pair of tokens
-val refreshedUserAuthorization = zoom.auth().refreshUserAuthorization(userAuthorization.refreshToken)
-
-// Store the new pair of tokens and keep using them to make API calls
 ```
 
 ## Installation
