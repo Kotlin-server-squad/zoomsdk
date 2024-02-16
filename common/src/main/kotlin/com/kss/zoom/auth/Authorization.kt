@@ -1,6 +1,7 @@
 package com.kss.zoom.auth
 
 import com.kss.zoom.auth.Http.UserAuthorizationResponse
+import com.kss.zoom.auth.Http.toAccessToken
 import com.kss.zoom.auth.Http.toUserTokens
 import com.kss.zoom.auth.config.AuthorizationConfig
 import com.kss.zoom.client.WebClient
@@ -14,6 +15,15 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 interface Authorization {
+
+    /**
+     * Generate an access token for the Zoom API. This is solely for Server-to-Server OAuth apps.
+     * see [https://developers.zoom.us/docs/internal-apps/s2s-oauth/#generate-access-token]
+     * @param accountId The account ID to generate the access token for.
+     * @return The access token.
+     */
+    suspend fun generateAccessToken(accountId: AccountId): Result<AccessToken>
+
     /**
      * Authorize a user with the given code and exchange it for a pair of access and refresh tokens.
      * @param code The code received from Zoom OAuth callback.
@@ -45,6 +55,16 @@ class AuthorizationImpl(private val config: AuthorizationConfig, private val cli
     }
 
     private val oauthTokenUrl = "${config.baseUrl}/oauth/token"
+
+    override suspend fun generateAccessToken(accountId: AccountId): Result<AccessToken> =
+        client.post<Http.ServerAuthorizationResponse>(
+            url = oauthTokenUrl,
+            clientId = config.clientId.value,
+            clientSecret = config.clientSecret.value,
+            contentType = FORM_URL_ENCODED_CONTENT_TYPE,
+            body = "grant_type=account_credentials&account_id=${accountId.value}"
+        ).toAccessToken()
+
 
     override suspend fun authorizeUser(code: AuthorizationCode): Result<UserTokens> =
         client.post<UserAuthorizationResponse>(
@@ -90,6 +110,18 @@ private object Http {
         }
     }
 
+    @Serializable
+    data class ServerAuthorizationResponse(
+        @SerialName("access_token") val accessToken: String,
+        @SerialName("token_type") val tokenType: String,
+        @SerialName("expires_in") val expiresIn: Long
+    ) {
+        fun toAccessToken(): AccessToken = AccessToken(accessToken, expiresIn)
+    }
+
     fun Result<UserAuthorizationResponse>.toUserTokens(): Result<UserTokens> =
         this.map { it.toUserTokens() }
+
+    fun Result<ServerAuthorizationResponse>.toAccessToken(): Result<AccessToken> =
+        this.map { it.toAccessToken() }
 }
