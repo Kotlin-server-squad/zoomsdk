@@ -1,7 +1,7 @@
 # Zoom SDK
 
 ## Overview
-This is a Kotlin SDK for the [Zoom API](https://marketplace.zoom.us/docs/api-reference/introduction). 
+This is a Kotlin SDK for the [Zoom API](https://marketplace.zoom.us/docs/api-reference/introduction).
 It provides a simple way to make API calls to Zoom.
 
 ## Benefits
@@ -9,30 +9,28 @@ It provides a simple way to make API calls to Zoom.
 * Handles the OAuth authentication process and makes authenticated requests to the Zoom API.
 * Highly flexible and customizable. Use as much or as little as you need.
 
-## SDK Modules
-* [Authorization](authorization/README.md)
-* [Meetings](meetings/README.md)
-
 ## How to Use It?
 
 ```kotlin
 import com.kss.zoomsdk.Zoom
 
-// Create a Zoom SDK instance
-val zoom = Zoom.create(
-    clientId = "your-client-id",
-    clientSecret = "you-client-secret"
-)
+// Initialize the Zoom SDK with your credentials
+val zoom = Zoom.create("clientId", "clientSecret")
 
-// Get the authorization URL
-val authUrl = zoom.auth().getAuthorizationUrl("https://your-redirect-url")
+// Authorize a user
+val authUrl = zoom.auth().getAuthorizationUrl(URL("http://localhost:8080/callback"))
 
-// Redirect the user to the authorization URL
-// Once the user authorizes your app, Zoom will redirect the user back to your app with an authorization code
-val userAuthorization = zoom.auth().authorizeUser("your-authorization-code")
+// Redirect the user to the authUrl and get the authorization code in the callback
+val authCode = AuthorizationCode("code-sent-by-zoom")
 
-// Use the access token to make API calls
-val meetings = zoom.meetings().listScheduled(userAuthorization.accessToken)
+// Authorize the user with the auth code - the result is a pair of access and refresh tokens
+val userTokens = zoom.auth().authorizeUser(authCode).getOrThrow()
+
+// Create an instance of Meetings SDK
+val meetingsSDK = zoom.meetings(userTokens)
+
+// Use the SDK, for example you can list scheduled meetings of the user
+val meetings = meetingsSDK.listScheduled().getOrThrow()
 
 // Once the access token expires, use the refresh token to get a new pair of tokens
 val refreshedUserAuthorization = zoom.auth().refreshUserAuthorization(userAuthorization.refreshToken)
@@ -78,36 +76,21 @@ val zoom = Zoom.create(
 ```
 
 ## Modularity
-The SDK is modular and you can use only the parts you need. 
-For example, if you only need to make API calls to the Zoom Meetings API, 
+The SDK is modular and you can use only the parts you need.
+For example, if you only need to make API calls to the Zoom Meetings API,
 you can create a Zoom SDK instance with only the Meetings module.
 
 ```kotlin
 import com.kss.zoomsdk.Zoom
 import com.kss.zoom.call
 
-// Create a Zoom SDK to schedule and cancel meetings
-val meetingsSDK = Zoom.meetings("clientId", "clientSecret")
+// Once you have authorized the user, use the pair of tokens to instantiate the module you need
 
-// Authorize a user
-val authUrl = meetingsSDK.auth().getAuthorizationUrl(URL("http://localhost:8080/callback"))
+// Create an instance of Meetings SDK
+val meetingsSDK = zoom.meetings(userTokens)
 
-// Redirect the user to the authUrl and get the authorization code in the callback
-val authCode = AuthorizationCode("code-sent-by-zoom")
-
-// Authorize the user with the auth code
-val userAuth = meetingsSDK.auth().authorizeUser(authCode).getOrThrow()
-
-// List scheduled meetings of the user
-meetingsSDK.authorize(userAuth)
-val meetings = meetingsSDK.listScheduled().getOrThrow()
-
-// Or use the fluent API
-val meetings = meetingsSDK.authorize(userAuth).listScheduled().getOrThrow()
-
-// The authorize method only needs to be called once. It attaches the user authorization to the SDK instance.
-// You can then make multiple API calls without having to pass the user authorization again.
-val meeting = meetingsSDK.getMeeting("meetingId").getOrThrow()
+// Create an instance of Users SDK
+val usersSDK = zoom.users(userTokens)
 ```
 
 ## Exception Handling
@@ -142,7 +125,7 @@ Tired of pattern matching, or a constant calls to `getOrThrow()`? You can use th
 ```kotlin
 
 // This will throw a ZoomException if the API call fails
-val scheduledMeetings = call { meetingsSDK.listScheduled(userAuth.accessToken) }
+val scheduledMeetings = call { meetingsSDK.listScheduled() }
 
 // Handle the happy path
 ```
