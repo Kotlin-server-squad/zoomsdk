@@ -3,7 +3,7 @@ name: Gradle Build CI
 on:
   push:
     branches:
-      - '**'
+      - 'main'
   pull_request:
     branches:
       - '**'
@@ -24,11 +24,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
+      - name: Build and test with Gradle
         run: ./gradlew build
-
-      - name: Test with Gradle
-        run: ./gradlew test
 
       - name: Integration Test with Gradle
         run: ./gradlew integrationTest
