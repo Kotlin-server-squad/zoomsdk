@@ -5,8 +5,7 @@ import com.kss.zoom.auth.AccountId
 import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.sdk.meetings.Meetings
 import com.kss.zoom.sdk.users.Users
-import com.kss.zoom.utils.call
-import kotlinx.coroutines.runBlocking
+import com.kss.zoom.utils.callSync
 
 object ZoomTestBase {
     private val CLIENT_ID: String = System.getenv("CLIENT_ID")
@@ -28,10 +27,8 @@ object ZoomTestBase {
 
     private fun userTokens(): UserTokens {
         val accountId = AccountId(ACCOUNT_ID)
-        return runBlocking {
-            UserTokens(
-                accessToken = call { zoom.auth().generateAccessToken(accountId) }
-            )
-        }
+        return UserTokens(
+            accessToken = callSync { zoom.auth().generateAccessToken(accountId) }
+        )
     }
 }
