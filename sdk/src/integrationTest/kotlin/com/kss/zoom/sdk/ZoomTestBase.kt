@@ -7,10 +7,12 @@ import com.kss.zoom.sdk.meetings.Meetings
 import com.kss.zoom.sdk.users.Users
 import com.kss.zoom.utils.callSync
 
-object ZoomTestBase {
-    private val CLIENT_ID: String = System.getenv("CLIENT_ID")
-    private val CLIENT_SECRET: String = System.getenv("CLIENT_SECRET")
-    private val ACCOUNT_ID: String = System.getenv("ACCOUNT_ID")
+abstract class ZoomTestBase {
+    companion object {
+        private val CLIENT_ID: String = System.getenv("CLIENT_ID")
+        private val CLIENT_SECRET: String = System.getenv("CLIENT_SECRET")
+        private val ACCOUNT_ID: String = System.getenv("ACCOUNT_ID")
+    }
 
     private val zoom = Zoom.create(
         clientId = CLIENT_ID,

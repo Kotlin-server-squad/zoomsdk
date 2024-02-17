@@ -100,14 +100,18 @@ import com.kss.zoom.utils.call
 // This is a non-blocking call via a coroutine.
 val scheduledMeetings = call { meetingsSDK.listScheduled() }
 ```
-If it suits you better, you can use the `future` function to get a `CompletableFuture`.
+If it suits you better, you can use the `callAsync` function to get a `CompletableFuture`.
 
 ```kotlin
 import com.kss.zoom.utils.future
 
 // This is a non-blocking call, it returns a CompletableFuture.
 // It can be invoked from a coroutine or from a non-coroutine context.
-val scheduledMeetings = future { meetingsSDK.listScheduled() }
+val scheduledMeetings = callAsync { meetingsSDK.listScheduled() }
+
+// It is a good fit for Java interop. Provide your own executor if needed.
+val executor = Executors.newFixedThreadPool(4)
+val scheduledMeetings = callAsync(executor) { meetingsSDK.listScheduled() }
 ```
 
 ### Blocking
@@ -119,6 +123,10 @@ import com.kss.zoom.utils.callSync
 // This call blocks the current thread until the result is available.
 // It is designed to be called from a non-coroutine context.
 val scheduledMeetings = callSync { meetingsSDK.listScheduled() }
+
+// It is a good fit for Java interop. Provide your own executor if needed.
+val executor = Executors.newFixedThreadPool(4)
+val scheduledMeetings = callSync(executor) { meetingsSDK.listScheduled() }
 ```
 
 ## Exception Handling

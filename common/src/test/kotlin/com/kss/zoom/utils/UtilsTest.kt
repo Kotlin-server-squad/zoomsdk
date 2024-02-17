@@ -44,15 +44,15 @@ class UtilsTest {
     }
 
     @Test
-    fun `future should return result of block`() {
-        val future = future { Result.success(1) }
+    fun `callAsync should return result of block as a completable future`() {
+        val future = callAsync { Result.success(1) }
         assertEquals(1, future.get(), "`future` should return result of block")
     }
 
     @Test
-    fun `future should throw an exception if the block fails`() {
+    fun `callAsync should throw an exception if the block fails`() {
         val zoomException = ZoomException(500, "Server error")
-        val future = future { Result.failure<Int>(zoomException) }
+        val future = callAsync { Result.failure<Int>(zoomException) }
         val exception = assertThrows(ExecutionException::class.java) {
             future.get()
         }
