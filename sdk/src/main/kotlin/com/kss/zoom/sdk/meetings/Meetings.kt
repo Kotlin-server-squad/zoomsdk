@@ -10,13 +10,13 @@ import io.ktor.client.*
 interface Meetings : ZoomModule {
 
     /**
-     * Schedule a meeting for the given user.
-     * @param userId The user ID to schedule the meeting for.
-     * @return The scheduled meeting.
+     * Create a meeting for the given user.
+     * @param request Meeting parameters that will be used to create the meeting.
+     * @return The created meeting.
      */
-    suspend fun schedule(userId: String): Result<ScheduledMeeting>
-    suspend fun listScheduled(): Result<List<ScheduledMeeting>>
-    suspend fun cancelScheduled(meetingId: Long): Result<ScheduledMeeting>
+    suspend fun create(request: CreateMeetingRequest): Result<Meeting>
+    suspend fun listScheduled(): Result<List<Meeting>>
+    suspend fun cancelScheduled(meetingId: Long): Result<Meeting>
 }
 
 class MeetingsImpl private constructor(
@@ -28,15 +28,15 @@ class MeetingsImpl private constructor(
             MeetingsImpl(auth, httpClient.toWebClient())
     }
 
-    override suspend fun schedule(userId: String): Result<ScheduledMeeting> {
+    override suspend fun create(request: CreateMeetingRequest): Result<Meeting> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun listScheduled(): Result<List<ScheduledMeeting>> {
+    override suspend fun listScheduled(): Result<List<Meeting>> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun cancelScheduled(meetingId: Long): Result<ScheduledMeeting> {
+    override suspend fun cancelScheduled(meetingId: Long): Result<Meeting> {
         TODO("Not yet implemented")
     }
 }
