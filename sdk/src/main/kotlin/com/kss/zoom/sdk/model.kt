@@ -5,7 +5,8 @@ import com.kss.zoom.client.WebClient
 
 interface ZoomModule
 
-abstract class ZoomModuleBase(auth: UserTokens, client: WebClient) : ZoomModule {
-    private var userTokens: UserTokens? = auth
+abstract class ZoomModuleBase(userTokens: UserTokens, val client: WebClient) : ZoomModule {
+    protected var userTokens: UserTokens? = userTokens
+        get() = field ?: throw IllegalStateException("User tokens have not been set.")
 
 }
