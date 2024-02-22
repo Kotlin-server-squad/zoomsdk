@@ -1,28 +1,33 @@
 package com.kss.zoom.sdk.meetings
 
-import com.kss.zoom.sdk.users.UserId
+import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.util.*
 
 data class Meeting(
     val id: Long,
-    val agenda: String,
-    val duration: Long,
-    val schedule: Schedule,
+    val uuid: String,
+    val topic: String,
+    val host: MeetingHost,
+    val startTime: LocalDateTime,
+    val duration: Short,
     val joinUrl: String,
-    val passcode: String
+    val startUrl: String,
+    val password: String,
+    val createdAt: Instant,
+    val timeZone: TimeZone? = null,
+    val schedule: Schedule? = null,
 )
 
-data class CreateMeetingRequest(
-    val userId: UserId,
-    val agenda: String,
-    val schedule: Schedule,
-    val passcode: String? = null
+data class MeetingHost(
+    val id: String,
+    val email: String
 )
 
 data class Schedule(
     val recurrence: Recurrence,
     val startTime: ZonedDateTime,
-    val duration: Long,
     val endTime: ZonedDateTime? = null,
     val endTimes: Int? = null,
 ) {
