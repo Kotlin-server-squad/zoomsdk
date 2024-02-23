@@ -47,6 +47,20 @@ class Meetings : ZoomTestBase() {
         verifyMeeting(meeting, params)
     }
 
+    @Test
+    fun `should get meeting by id`(): Unit = runBlocking {
+        val meeting = createMeeting()
+        val foundMeeting = call { meetings.get(meeting.id) }
+        assertEquals(meeting, foundMeeting, "Meetings should match")
+    }
+
+    @Test
+    fun `should delete meeting`(): Unit = runBlocking {
+        val meeting = createMeeting()
+        val result = call { meetings.delete(meeting.id) }
+        assertTrue(result, "Meeting should be deleted")
+    }
+
     private fun verifyMeeting(meeting: Meeting, expectedParams: MeetingParams) {
         assertEquals(expectedParams.topic, meeting.topic, "Topic should match")
         assertEquals(expectedParams.duration, meeting.duration, "Duration should match")
@@ -56,6 +70,18 @@ class Meetings : ZoomTestBase() {
         assertNotNull(meeting.host.email, "Host email should not be null")
         assertFalse(meeting.uuid.isBlank(), "UUID should not be blank")
         assertTrue(meeting.id > 0, "ID should be greater than 0")
+    }
+
+    private suspend fun createMeeting(): Meeting {
+        return call {
+            meetings.create(
+                userId = USER_ID,
+                topic = "Test topic",
+                startTime = LocalDateTime.now(),
+                duration = 60,
+                timezone = TimeZone.getTimeZone("Europe/London")
+            )
+        }
     }
 }
 data class MeetingParams(

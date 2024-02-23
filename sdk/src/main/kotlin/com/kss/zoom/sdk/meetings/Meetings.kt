@@ -33,8 +33,26 @@ interface Meetings : ZoomModule {
         timezone: TimeZone
     ): Result<Meeting>
 
-    suspend fun listScheduled(): Result<List<Meeting>>
-    suspend fun cancelScheduled(meetingId: Long): Result<Meeting>
+    /**
+     * Get a meeting by id.
+     * @param meetingId The id of the meeting to get.
+     * @return The meeting.
+     */
+    suspend fun get(meetingId: Long): Result<Meeting>
+
+    /**
+     * Delete a meeting.
+     * @param meetingId The id of the meeting to delete.
+     * @return True if the meeting was deleted, false otherwise.
+     */
+    suspend fun delete(meetingId: Long): Result<Boolean>
+
+    /**
+     * List all scheduled meetings for the given user.
+     * @param userId The id of the user to list meetings for.
+     * @return The list of scheduled meetings.
+     */
+    suspend fun listScheduled(userId: UserId): Result<List<Meeting>>
 }
 
 class MeetingsImpl private constructor(
@@ -68,11 +86,20 @@ class MeetingsImpl private constructor(
         ).toModel()
     }
 
-    override suspend fun listScheduled(): Result<List<Meeting>> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun get(meetingId: Long): Result<Meeting> =
+        client.get<Http.MeetingResponse>(
+            url = "$ZOOM_API_URL/meetings/$meetingId",
+            token = userTokens!!.accessToken.value
+        ).toModel()
 
-    override suspend fun cancelScheduled(meetingId: Long): Result<Meeting> {
+    override suspend fun delete(meetingId: Long): Result<Boolean> =
+        client.delete(
+            url = "$ZOOM_API_URL/meetings/$meetingId",
+            token = userTokens!!.accessToken.value
+        ).map { true }
+
+    override suspend fun listScheduled(userId: UserId): Result<List<Meeting>> {
+        // This needs to support pagination. See: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetings
         TODO("Not yet implemented")
     }
 }

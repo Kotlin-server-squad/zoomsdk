@@ -68,6 +68,19 @@ class WebClient private constructor(val client: HttpClient) {
             }.body()
         }
 
+    suspend inline fun<reified T> get(url: String, token: String): Result<T> =
+        runCoCatching {
+            client.get(url) {
+                bearerAuth(token)
+            }
+        }
+    suspend inline fun delete(url: String, token: String): Result<Unit> =
+        runCoCatching {
+            client.delete(url) {
+                bearerAuth(token)
+            }
+        }
+
     fun HttpRequestBuilder.contentType(contentType: String?): HttpRequestBuilder {
         val parsedContentType = contentType?.let { ContentType.parse(it) } ?: ContentType.Application.Json
         contentType(parsedContentType)
