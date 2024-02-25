@@ -14,6 +14,7 @@ import io.ktor.utils.io.*
 class WebClient private constructor(val client: HttpClient) {
     companion object {
         const val FORM_URL_ENCODED_CONTENT_TYPE = "application/x-www-form-urlencoded"
+        const val JSON_CONTENT_TYPE = "application/json"
 
         fun create(client: HttpClient): WebClient = WebClient(client)
 
@@ -65,6 +66,19 @@ class WebClient private constructor(val client: HttpClient) {
                 contentType(contentType)
                 body?.let { setBody(it) }
             }.body()
+        }
+
+    suspend inline fun<reified T> get(url: String, token: String): Result<T> =
+        runCoCatching {
+            client.get(url) {
+                bearerAuth(token)
+            }
+        }
+    suspend inline fun delete(url: String, token: String): Result<Unit> =
+        runCoCatching {
+            client.delete(url) {
+                bearerAuth(token)
+            }
         }
 
     fun HttpRequestBuilder.contentType(contentType: String?): HttpRequestBuilder {
