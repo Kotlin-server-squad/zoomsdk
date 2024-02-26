@@ -1,5 +1,7 @@
 package com.kss.zoom.sdk.meetings
 
+import com.kss.zoom.PagedQuery
+import com.kss.zoom.PagedResponse
 import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.client.WebClient
 import com.kss.zoom.sdk.ZOOM_API_URL
@@ -50,9 +52,13 @@ interface Meetings : ZoomModule {
     /**
      * List all scheduled meetings for the given user.
      * @param userId The id of the user to list meetings for.
-     * @return The list of scheduled meetings.
+     * @param query Limit and offset for the list of meetings.
+     * @return A page of meetings.
      */
-    suspend fun listScheduled(userId: UserId): Result<List<Meeting>>
+    suspend fun listScheduled(
+        userId: UserId,
+        query: PagedQuery = PagedQuery(page = 1, pageSize = 30)
+    ): Result<PagedResponse<List<Meeting>>>
 }
 
 class MeetingsImpl private constructor(
@@ -98,8 +104,7 @@ class MeetingsImpl private constructor(
             token = userTokens!!.accessToken.value
         ).map { true }
 
-    override suspend fun listScheduled(userId: UserId): Result<List<Meeting>> {
-        // This needs to support pagination. See: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetings
+    override suspend fun listScheduled(userId: UserId, query: PagedQuery): Result<PagedResponse<List<Meeting>>> {
         TODO("Not yet implemented")
     }
 }
