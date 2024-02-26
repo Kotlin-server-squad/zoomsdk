@@ -51,6 +51,7 @@ class Meetings : ZoomTestBase() {
     fun `should get meeting by id`(): Unit = runBlocking {
         val meeting = createMeeting()
         val foundMeeting = call { meetings.get(meeting.id) }
+        isEqualIgnoringStartUrl(meeting, foundMeeting)
         assertEquals(meeting, foundMeeting, "Meetings should match")
     }
 
@@ -82,6 +83,11 @@ class Meetings : ZoomTestBase() {
                 timezone = TimeZone.getTimeZone("Europe/London")
             )
         }
+    }
+
+    private fun isEqualIgnoringStartUrl(expected: Meeting, actual: Meeting) {
+        assertFalse(actual.startUrl.isBlank())
+        assertEquals(expected, actual.copy(startUrl = expected.startUrl), "Meetings should match")
     }
 }
 data class MeetingParams(
