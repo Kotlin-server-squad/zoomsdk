@@ -62,6 +62,13 @@ class Meetings : ZoomTestBase() {
         assertTrue(result, "Meeting should be deleted")
     }
 
+    @Test
+    fun `should list scheduled meetings`(): Unit = runBlocking {
+        (1..3).map { createMeeting() }
+        val result = call { meetings.listScheduled(USER_ID) }
+        assertNotNull(result, "Result should not be null")
+    }
+
     private fun verifyMeeting(meeting: Meeting, expectedParams: MeetingParams) {
         assertEquals(expectedParams.topic, meeting.topic, "Topic should match")
         assertEquals(expectedParams.duration, meeting.duration, "Duration should match")

@@ -57,8 +57,8 @@ interface Meetings : ZoomModule {
      */
     suspend fun listScheduled(
         userId: UserId,
-        query: PagedQuery = PagedQuery(page = 1, pageSize = 30)
-    ): Result<PagedResponse<List<Meeting>>>
+        query: PagedQuery = PagedQuery(pageNumber = 1, pageSize = 30)
+    ): Result<PagedResponse<Meeting>>
 }
 
 class MeetingsImpl private constructor(
@@ -89,14 +89,14 @@ class MeetingsImpl private constructor(
                 duration = duration,
                 timezone = timezone.id
             )
-        ).toModel()
+        ).map { it.toModel() }
     }
 
     override suspend fun get(meetingId: Long): Result<Meeting> =
         client.get<Http.MeetingResponse>(
             url = "$ZOOM_API_URL/meetings/$meetingId",
             token = userTokens!!.accessToken.value
-        ).toModel()
+        ).map { it.toModel() }
 
     override suspend fun delete(meetingId: Long): Result<Boolean> =
         client.delete(
@@ -104,30 +104,62 @@ class MeetingsImpl private constructor(
             token = userTokens!!.accessToken.value
         ).map { true }
 
-    override suspend fun listScheduled(userId: UserId, query: PagedQuery): Result<PagedResponse<List<Meeting>>> {
-        TODO("Not yet implemented")
+    override suspend fun listScheduled(userId: UserId, query: PagedQuery): Result<PagedResponse<Meeting>> {
+        val params = StringBuilder("?type=scheduled&page_number=${query.pageNumber}&page_size=${query.pageSize}")
+        query.filter?.let {
+            params.append("&from=${it.startDate.toIsoString()}&to=${it.endDate.toIsoString()}")
+        }
+        query.nextPageToken?.let {
+            params.append("&next_page_token=$it")
+        }
+        return client.get<Http.PaginationObject>(
+            url = "$ZOOM_API_URL/users/$userId/meetings?$params",
+            token = userTokens!!.accessToken.value
+        ).map { it.toModel() }
     }
 }
 
-private fun Result<Http.MeetingResponse>.toModel(): Result<Meeting> =
-    this.map { response ->
-        Meeting(
-            id = response.id,
-            uuid = response.uuid,
-            topic = response.topic,
-            host = MeetingHost(
-                id = response.hostId,
-                email = response.hostEmail
-            ),
-            startTime = ZonedDateTime.parse(response.startTime).toLocalDateTime(),
-            duration = response.duration,
-            joinUrl = response.joinUrl,
-            startUrl = response.startUrl,
-            password = response.password,
-            createdAt = ZonedDateTime.parse(response.createdAt).toInstant(),
-            timeZone = TimeZone.getTimeZone(response.timezone),
-        )
-    }
+private fun Http.PaginationObject.toModel(): PagedResponse<Meeting> =
+    PagedResponse(
+        items = this.meetings.map { it.toModel() },
+        nextPageToken = this.nextPageToken
+    )
+
+private fun Http.MeetingResponse.toModel(): Meeting =
+    Meeting(
+        id = id,
+        uuid = uuid,
+        topic = topic,
+        host = MeetingHost(
+            id = hostId,
+            email = hostEmail
+        ),
+        startTime = ZonedDateTime.parse(startTime).toLocalDateTime(),
+        duration = duration,
+        joinUrl = joinUrl,
+        startUrl = startUrl,
+        password = password,
+        createdAt = ZonedDateTime.parse(createdAt).toInstant(),
+        timeZone = TimeZone.getTimeZone(timezone),
+    )
+
+private fun Http.ScheduledMeeting.toModel(): Meeting =
+    Meeting(
+        id = id,
+        uuid = "",
+        topic = topic ?: "",
+        host = MeetingHost(
+            id = hostId ?: "",
+            email = ""
+        ),
+        startTime = LocalDateTime.now(),
+        duration = duration ?: 0,
+        joinUrl = "",
+        startUrl = "",
+        password = "",
+        createdAt = ZonedDateTime.parse(createdAt).toInstant(),
+        timeZone = TimeZone.getDefault(),
+    )
 
 private object Http {
     @Serializable
@@ -154,6 +186,25 @@ private object Http {
         @SerialName("start_url") val startUrl: String,
         @SerialName("join_url") val joinUrl: String,
         val password: String
+    )
+
+    @Serializable
+    data class ScheduledMeeting(
+        val id: Long,
+        val topic: String?,
+        @SerialName("created_at") val createdAt: String,
+        val duration: Short?,
+        @SerialName("host_id") val hostId: String?
+    )
+
+    @Serializable
+    data class PaginationObject(
+        @SerialName("next_page_token") val nextPageToken: String,
+        @SerialName("page_count") val pageCount: Int,
+        @SerialName("page_number") val pageNumber: Int,
+        @SerialName("page_size") val pageSize: Int,
+        @SerialName("total_records") val totalRecords: Int,
+        val meetings: List<ScheduledMeeting>
     )
 
     @Serializable
