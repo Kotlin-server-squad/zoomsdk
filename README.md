@@ -30,17 +30,11 @@ val userTokens = zoom.auth().authorizeUser(authCode).getOrThrow()
 val meetingsSDK = zoom.meetings(userTokens)
 
 // Use the SDK, for example you can list scheduled meetings of the user
-val meetings = meetingsSDK.listScheduled().getOrThrow()
+val meetings = meetingsSDK.listScheduled("your-zoom-user-id").getOrThrow()
 ```
 
 ## Installation
-Add the following dependency to your `build.gradle.kts` file:
-
-```kotlin
-dependencies {
-    implementation("com.kss.zoom:zoom-sdk:0.1.0")
-}
-```
+The SDK will be available on Maven Central. Stay tuned for the release announcement.
 
 ## Prerequisites
 In order to use the SDK, you need to have the following:
@@ -98,7 +92,7 @@ All API calls are suspendable functions, which means they must be called from a 
 import com.kss.zoom.utils.call
 
 // This is a non-blocking call via a coroutine.
-val scheduledMeetings = call { meetingsSDK.listScheduled() }
+val scheduledMeetings = call { meetingsSDK.listScheduled("your-zoom-user-id") }
 ```
 If it suits you better, you can use the `callAsync` function to get a `CompletableFuture`.
 
@@ -111,7 +105,7 @@ val scheduledMeetings = callAsync { meetingsSDK.listScheduled() }
 
 // It is a good fit for Java interop. Provide your own executor if needed.
 val executor = Executors.newFixedThreadPool(4)
-val scheduledMeetings = callAsync(executor) { meetingsSDK.listScheduled() }
+val scheduledMeetings = callAsync(executor) { meetingsSDK.listScheduled("your-zoom-user-id") }
 ```
 
 ### Blocking
@@ -122,7 +116,7 @@ import com.kss.zoom.utils.callSync
 
 // This call blocks the current thread until the result is available.
 // It is designed to be called from a non-coroutine context.
-val scheduledMeetings = callSync { meetingsSDK.listScheduled() }
+val scheduledMeetings = callSync { meetingsSDK.listScheduled("your-zoom-user-id") }
 
 // It is a good fit for Java interop. Provide your own executor if needed.
 val executor = Executors.newFixedThreadPool(4)
