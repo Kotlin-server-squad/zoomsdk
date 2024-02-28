@@ -1,4 +1,5 @@
 # Zoom SDK
+[![Gradle Build CI](https://github.com/Kotlin-server-squad/zoomsdk/actions/workflows/build.yaml/badge.svg)](https://github.com/Kotlin-server-squad/zoomsdk/actions/workflows/build.yaml)
 
 ## Overview
 This is a Kotlin SDK for the [Zoom API](https://marketplace.zoom.us/docs/api-reference/introduction).
