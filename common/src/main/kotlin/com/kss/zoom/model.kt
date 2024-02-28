@@ -4,9 +4,13 @@ import java.time.LocalDateTime
 
 class ZoomException(val code: Int, message: String) : Exception(message)
 
-data class PagedResponse<T>(
+data class Page<T>(
     val items: List<T>,
-    val nextPageToken: String?
+    val pageNumber: Int,
+    val pageCount: Int,
+    val pageSize: Int,
+    val totalRecords: Int,
+    val nextPageToken: String? = null
 )
 
 data class PagedQuery(

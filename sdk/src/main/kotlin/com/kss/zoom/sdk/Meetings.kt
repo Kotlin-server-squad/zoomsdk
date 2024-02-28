@@ -1,13 +1,10 @@
-package com.kss.zoom.sdk.meetings
+package com.kss.zoom.sdk
 
 import com.kss.zoom.PagedQuery
-import com.kss.zoom.PagedResponse
+import com.kss.zoom.Page
 import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.client.WebClient
-import com.kss.zoom.sdk.ZOOM_API_URL
-import com.kss.zoom.sdk.ZoomModule
-import com.kss.zoom.sdk.ZoomModuleBase
-import com.kss.zoom.sdk.users.UserId
+import com.kss.zoom.sdk.model.*
 import com.kss.zoom.toIsoString
 import com.kss.zoom.toWebClient
 import io.ktor.client.*
@@ -50,6 +47,13 @@ interface Meetings : ZoomModule {
     suspend fun delete(meetingId: Long): Result<Boolean>
 
     /**
+     * Delete all meetings for the given user.
+     * @param userId The id of the user to delete meetings for.
+     * @return True if the meetings were deleted, false otherwise.
+     */
+    suspend fun deleteAll(userId: UserId): Result<Boolean>
+
+    /**
      * List all scheduled meetings for the given user.
      * @param userId The id of the user to list meetings for.
      * @param query Limit and offset for the list of meetings.
@@ -58,7 +62,7 @@ interface Meetings : ZoomModule {
     suspend fun listScheduled(
         userId: UserId,
         query: PagedQuery = PagedQuery(pageNumber = 1, pageSize = 30)
-    ): Result<PagedResponse<Meeting>>
+    ): Result<Page<ScheduledMeeting>>
 }
 
 class MeetingsImpl private constructor(
@@ -102,9 +106,24 @@ class MeetingsImpl private constructor(
         client.delete(
             url = "$ZOOM_API_URL/meetings/$meetingId",
             token = userTokens!!.accessToken.value
-        ).map { true }
+        ).map { true }.also {
+            logger.info("Meeting {} deleted", meetingId)
+        }
 
-    override suspend fun listScheduled(userId: UserId, query: PagedQuery): Result<PagedResponse<Meeting>> {
+    override suspend fun deleteAll(userId: UserId): Result<Boolean> {
+        listScheduled(userId).map { page ->
+            page.items.forEach { delete(it.id) }
+            logger.info("{} out of {} meetings of user {} deleted", page.items.size, page.totalRecords, userId)
+            if (page.nextPageToken != null) {
+                deleteAll(userId)
+            }
+        }
+        return Result.success(true).also {
+            logger.info("All meetings of user {} deleted", userId)
+        }
+    }
+
+    override suspend fun listScheduled(userId: UserId, query: PagedQuery): Result<Page<ScheduledMeeting>> {
         val params = StringBuilder("?type=scheduled&page_number=${query.pageNumber}&page_size=${query.pageSize}")
         query.filter?.let {
             params.append("&from=${it.startDate.toIsoString()}&to=${it.endDate.toIsoString()}")
@@ -119,10 +138,14 @@ class MeetingsImpl private constructor(
     }
 }
 
-private fun Http.PaginationObject.toModel(): PagedResponse<Meeting> =
-    PagedResponse(
+private fun Http.PaginationObject.toModel(): Page<ScheduledMeeting> =
+    Page(
         items = this.meetings.map { it.toModel() },
-        nextPageToken = this.nextPageToken
+        pageNumber = pageNumber,
+        pageCount = pageCount,
+        pageSize = pageSize,
+        totalRecords = totalRecords,
+        nextPageToken = nextPageToken
     )
 
 private fun Http.MeetingResponse.toModel(): Meeting =
@@ -143,22 +166,18 @@ private fun Http.MeetingResponse.toModel(): Meeting =
         timeZone = TimeZone.getTimeZone(timezone),
     )
 
-private fun Http.ScheduledMeeting.toModel(): Meeting =
-    Meeting(
+private fun Http.ScheduledMeeting.toModel(): ScheduledMeeting =
+    ScheduledMeeting(
         id = id,
-        uuid = "",
-        topic = topic ?: "",
-        host = MeetingHost(
-            id = hostId ?: "",
-            email = ""
-        ),
-        startTime = LocalDateTime.now(),
-        duration = duration ?: 0,
-        joinUrl = "",
-        startUrl = "",
-        password = "",
+        uuid = uuid,
+        hostId = hostId,
+        agenda = agenda,
+        topic = topic,
+        startTime = ZonedDateTime.parse(startTime).toInstant(),
+        duration = duration,
+        joinUrl = joinUrl,
         createdAt = ZonedDateTime.parse(createdAt).toInstant(),
-        timeZone = TimeZone.getDefault(),
+        timeZone = TimeZone.getTimeZone(timezone)
     )
 
 private object Http {
@@ -191,20 +210,25 @@ private object Http {
     @Serializable
     data class ScheduledMeeting(
         val id: Long,
-        val topic: String?,
+        val uuid: String,
+        @SerialName("host_id") val hostId: String,
+        val agenda: String? = null,
+        val topic: String,
+        val duration: Short,
+        @SerialName("start_time") val startTime: String,
+        val timezone: String,
         @SerialName("created_at") val createdAt: String,
-        val duration: Short?,
-        @SerialName("host_id") val hostId: String?
+        @SerialName("join_url") val joinUrl: String
     )
 
     @Serializable
     data class PaginationObject(
-        @SerialName("next_page_token") val nextPageToken: String,
         @SerialName("page_count") val pageCount: Int,
         @SerialName("page_number") val pageNumber: Int,
         @SerialName("page_size") val pageSize: Int,
         @SerialName("total_records") val totalRecords: Int,
-        val meetings: List<ScheduledMeeting>
+        val meetings: List<ScheduledMeeting>,
+        @SerialName("next_page_token") val nextPageToken: String? = null
     )
 
     @Serializable

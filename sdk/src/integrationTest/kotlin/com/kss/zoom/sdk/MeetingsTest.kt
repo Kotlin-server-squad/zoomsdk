@@ -1,9 +1,12 @@
 package com.kss.zoom.sdk
 
-import com.kss.zoom.sdk.meetings.Meeting
-import com.kss.zoom.sdk.meetings.Meetings
+import com.kss.zoom.Page
+import com.kss.zoom.PagedQuery
+import com.kss.zoom.sdk.model.Meeting
+import com.kss.zoom.sdk.model.ScheduledMeeting
 import com.kss.zoom.utils.call
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -14,7 +17,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class Meetings : ZoomTestBase() {
+class MeetingsTest : ZoomTestBase() {
 
     companion object {
         const val USER_ID = "lqkrEKqMR1CCmALIVs73RQ"
@@ -25,6 +28,13 @@ class Meetings : ZoomTestBase() {
     @BeforeEach
     fun setUp() {
         meetings = meetings()
+    }
+
+    @AfterEach
+    fun tearDown() = runBlocking {
+        assertTrue {
+            call { meetings.deleteAll(USER_ID) }
+        }
     }
 
     @Test
@@ -64,15 +74,44 @@ class Meetings : ZoomTestBase() {
 
     @Test
     fun `should list scheduled meetings`(): Unit = runBlocking {
-        (1..3).map { createMeeting() }
-        val result = call { meetings.listScheduled(USER_ID) }
-        assertNotNull(result, "Result should not be null")
+        val userMeetings = createMeetings(3)
+        verifyPage(call { meetings.listScheduled(USER_ID) }, userMeetings, expectedPageSize = 3, expectedPageCount = 1)
+    }
+
+    @Test
+    fun `should list multiple pages of scheduled meetings`(): Unit = runBlocking {
+        val userMeetings = createMeetings(10)
+        val pageSize = 3
+        val pageOne = call { meetings.listScheduled(USER_ID, PagedQuery(pageNumber = 1, pageSize = pageSize)) }
+        verifyPage(pageOne, userMeetings, expectedPageSize = pageSize, expectedPageCount = 4)
+
+        val pageTwo = call { meetings.listScheduled(USER_ID, PagedQuery(pageNumber = 2, pageSize = pageSize)) }
+        verifyPage(pageTwo, userMeetings, expectedPageSize = pageSize, expectedPageCount = 4)
+    }
+
+    private fun verifyPage(
+        page: Page<ScheduledMeeting>,
+        expectedMeetings: List<Meeting>,
+        expectedPageSize: Int,
+        expectedPageCount: Int
+    ) {
+        assertEquals(expectedPageSize, page.items.size, "Page size should match")
+        assertEquals(expectedPageCount, page.pageCount, "Page count should match")
+        assertEquals(expectedMeetings.size, page.totalRecords, "Total records should match")
+        assertTrue(
+            page.items.map { it.id }.all { meetingId -> expectedMeetings.any { it.id == meetingId } },
+            "All items should be in the expected meetings list"
+        )
     }
 
     private fun verifyMeeting(meeting: Meeting, expectedParams: MeetingParams) {
         assertEquals(expectedParams.topic, meeting.topic, "Topic should match")
         assertEquals(expectedParams.duration, meeting.duration, "Duration should match")
-        assertEquals(expectedParams.startTime.truncatedTo(ChronoUnit.SECONDS), meeting.startTime, "Start time should match")
+        assertEquals(
+            expectedParams.startTime.truncatedTo(ChronoUnit.SECONDS),
+            meeting.startTime,
+            "Start time should match"
+        )
         assertNotNull(meeting.host, "Host should not be null")
         assertEquals(USER_ID, meeting.host.id, "Host id should match")
         assertNotNull(meeting.host.email, "Host email should not be null")
@@ -92,11 +131,15 @@ class Meetings : ZoomTestBase() {
         }
     }
 
+    private suspend fun createMeetings(count: Int): List<Meeting> =
+        (1..count).map { createMeeting() }
+
     private fun isEqualIgnoringStartUrl(expected: Meeting, actual: Meeting) {
         assertFalse(actual.startUrl.isBlank())
         assertEquals(expected, actual.copy(startUrl = expected.startUrl), "Meetings should match")
     }
 }
+
 data class MeetingParams(
     val topic: String,
     val duration: Short,
