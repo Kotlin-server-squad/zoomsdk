@@ -19,6 +19,10 @@ import kotlin.test.assertTrue
 
 class MeetingsTest : ZoomTestBase() {
 
+    companion object {
+        private const val USER_ID = "DyVG0MGzQJuxaJ4mju20bA"
+    }
+
     private lateinit var meetings: Meetings
 
     @BeforeEach
