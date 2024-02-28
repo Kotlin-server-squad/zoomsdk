@@ -19,10 +19,6 @@ import kotlin.test.assertTrue
 
 class MeetingsTest : ZoomTestBase() {
 
-    companion object {
-        const val USER_ID = "lqkrEKqMR1CCmALIVs73RQ"
-    }
-
     private lateinit var meetings: Meetings
 
     @BeforeEach
@@ -62,7 +58,6 @@ class MeetingsTest : ZoomTestBase() {
         val meeting = createMeeting()
         val foundMeeting = call { meetings.get(meeting.id) }
         isEqualIgnoringStartUrl(meeting, foundMeeting)
-        assertEquals(meeting, foundMeeting, "Meetings should match")
     }
 
     @Test
@@ -136,7 +131,11 @@ class MeetingsTest : ZoomTestBase() {
 
     private fun isEqualIgnoringStartUrl(expected: Meeting, actual: Meeting) {
         assertFalse(actual.startUrl.isBlank())
-        assertEquals(expected, actual.copy(startUrl = expected.startUrl), "Meetings should match")
+        assertEquals(
+            expected,
+            actual.copy(startUrl = expected.startUrl),
+            "Meetings should match"
+        )
     }
 }
 
