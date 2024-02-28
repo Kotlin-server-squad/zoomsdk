@@ -19,10 +19,6 @@ import kotlin.test.assertTrue
 
 class MeetingsTest : ZoomTestBase() {
 
-    companion object {
-        private const val USER_ID = "DyVG0MGzQJuxaJ4mju20bA"
-    }
-
     private lateinit var meetings: Meetings
 
     @BeforeEach
@@ -79,13 +75,13 @@ class MeetingsTest : ZoomTestBase() {
 
     @Test
     fun `should list multiple pages of scheduled meetings`(): Unit = runBlocking {
-        val userMeetings = createMeetings(10)
+        val userMeetings = createMeetings(5)
         val pageSize = 3
         val pageOne = call { meetings.listScheduled(USER_ID, PagedQuery(pageNumber = 1, pageSize = pageSize)) }
-        verifyPage(pageOne, userMeetings, expectedPageSize = pageSize, expectedPageCount = 4)
+        verifyPage(pageOne, userMeetings, expectedPageSize = 3, expectedPageCount = 2)
 
         val pageTwo = call { meetings.listScheduled(USER_ID, PagedQuery(pageNumber = 2, pageSize = pageSize)) }
-        verifyPage(pageTwo, userMeetings, expectedPageSize = pageSize, expectedPageCount = 4)
+        verifyPage(pageTwo, userMeetings, expectedPageSize = 2, expectedPageCount = 2)
     }
 
     private fun verifyPage(
