@@ -1,10 +1,9 @@
 package com.kss.zoom.sdk
 
-import com.kss.zoom.sdk.users.Users
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class Users : ZoomTestBase() {
+class UsersTest : ZoomTestBase() {
 
     private lateinit var users: Users
 

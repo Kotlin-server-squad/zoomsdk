@@ -1,4 +1,4 @@
-package com.kss.zoom.sdk.meetings
+package com.kss.zoom.sdk.model
 
 import java.time.Instant
 import java.time.LocalDateTime
@@ -18,6 +18,19 @@ data class Meeting(
     val createdAt: Instant,
     val timeZone: TimeZone? = null,
     val schedule: Schedule? = null,
+)
+
+data class ScheduledMeeting(
+    val id: Long,
+    val uuid: String,
+    val hostId: String,
+    val agenda: String?,
+    val topic: String?,
+    val startTime: Instant,
+    val duration: Short,
+    val createdAt: Instant,
+    val timeZone: TimeZone?,
+    val joinUrl: String
 )
 
 data class MeetingHost(

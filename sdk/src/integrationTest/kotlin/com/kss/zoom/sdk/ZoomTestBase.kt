@@ -3,8 +3,6 @@ package com.kss.zoom.sdk
 import com.kss.zoom.Zoom
 import com.kss.zoom.auth.AccountId
 import com.kss.zoom.auth.UserTokens
-import com.kss.zoom.sdk.meetings.Meetings
-import com.kss.zoom.sdk.users.Users
 import com.kss.zoom.utils.callSync
 
 abstract class ZoomTestBase {
@@ -12,6 +10,7 @@ abstract class ZoomTestBase {
         private val CLIENT_ID: String = System.getenv("CLIENT_ID")
         private val CLIENT_SECRET: String = System.getenv("CLIENT_SECRET")
         private val ACCOUNT_ID: String = System.getenv("ACCOUNT_ID")
+        val USER_ID: String = System.getenv("USER_ID")
     }
 
     private val zoom = Zoom.create(

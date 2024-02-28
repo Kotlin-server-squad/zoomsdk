@@ -1,4 +1,4 @@
-package com.kss.zoom.sdk.users
+package com.kss.zoom.sdk.model
 
 data class User(
     val id: UserId,
