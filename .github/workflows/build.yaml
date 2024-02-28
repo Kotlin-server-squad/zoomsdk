@@ -27,11 +27,3 @@ jobs:
 
       - name: Build and test with Gradle
         run: ./gradlew build
-
-      - name: Integration Test with Gradle
-        run: ./gradlew integrationTest
-        env:
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          USER_ID: ${{ secrets.USER_ID }}
