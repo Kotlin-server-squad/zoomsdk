@@ -10,22 +10,28 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
+import java.util.*
 
 class WebClient private constructor(val client: HttpClient) {
     companion object {
         const val FORM_URL_ENCODED_CONTENT_TYPE = "application/x-www-form-urlencoded"
         const val JSON_CONTENT_TYPE = "application/json"
+        private const val DEFAULT_CORRELATION_ID_HEADER = "X-Correlation-Id"
 
-        fun create(client: HttpClient): WebClient = WebClient(client)
+        fun create(client: HttpClient, correlationIdHeader: String = DEFAULT_CORRELATION_ID_HEADER): WebClient =
+            WebClient(client.withCorrelationId(correlationIdHeader, ::generateCorrelationId))
 
-        fun create(): WebClient = WebClient(
+        fun create(correlationIdHeader: String = DEFAULT_CORRELATION_ID_HEADER): WebClient = WebClient(
             HttpClient(CIO) {
                 configureLogging()
                 configureSerialization()
-            }
+            }.withCorrelationId(correlationIdHeader, ::generateCorrelationId)
         )
+
+        private fun generateCorrelationId(): String = UUID.randomUUID().toString()
     }
 
+    // TODO propagate correlation id in a custom header
     suspend inline fun <reified T> post(
         url: String,
         contentType: String?,
@@ -68,12 +74,13 @@ class WebClient private constructor(val client: HttpClient) {
             }.body()
         }
 
-    suspend inline fun<reified T> get(url: String, token: String): Result<T> =
+    suspend inline fun <reified T> get(url: String, token: String): Result<T> =
         runCoCatching {
             client.get(url) {
                 bearerAuth(token)
             }
         }
+
     suspend inline fun delete(url: String, token: String): Result<Unit> =
         runCoCatching {
             client.delete(url) {

@@ -11,5 +11,4 @@ abstract class ZoomModuleBase(userTokens: UserTokens, val client: WebClient) : Z
     protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
     protected var userTokens: UserTokens? = userTokens
         get() = field ?: throw IllegalStateException("User tokens have not been set.")
-
 }
