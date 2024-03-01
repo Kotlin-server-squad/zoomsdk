@@ -172,7 +172,6 @@ val scheduledMeetings = call {
 }
 ```
 
-```kotlin
 ## Building from Source Code
 To build the SDK from source code, clone the repository and run the following command:
 
