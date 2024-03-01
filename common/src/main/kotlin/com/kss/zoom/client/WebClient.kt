@@ -10,20 +10,27 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
+import org.slf4j.MDC
+import java.util.*
 
-class WebClient private constructor(val client: HttpClient) {
+class WebClient private constructor(val client: HttpClient, val correlationIdHeader: String) {
     companion object {
         const val FORM_URL_ENCODED_CONTENT_TYPE = "application/x-www-form-urlencoded"
         const val JSON_CONTENT_TYPE = "application/json"
+        private const val DEFAULT_CORRELATION_ID_HEADER = "X-Correlation-Id"
 
-        fun create(client: HttpClient): WebClient = WebClient(client)
+        fun create(client: HttpClient, correlationIdHeader: String = DEFAULT_CORRELATION_ID_HEADER): WebClient =
+            WebClient(client.withCorrelationId(correlationIdHeader, ::generateCorrelationId), correlationIdHeader)
 
-        fun create(): WebClient = WebClient(
+        fun create(correlationIdHeader: String = DEFAULT_CORRELATION_ID_HEADER): WebClient = WebClient(
             HttpClient(CIO) {
                 configureLogging()
                 configureSerialization()
-            }
+            }.withCorrelationId(correlationIdHeader, ::generateCorrelationId),
+            correlationIdHeader
         )
+
+        private fun generateCorrelationId(): String = UUID.randomUUID().toString()
     }
 
     suspend inline fun <reified T> post(
@@ -33,6 +40,7 @@ class WebClient private constructor(val client: HttpClient) {
     ): Result<T> =
         runCoCatching {
             client.post(url) {
+                header(correlationIdHeader, getOrCreateCorrelationId())
                 contentType(contentType)
                 body?.let { setBody(it) }
             }
@@ -46,6 +54,7 @@ class WebClient private constructor(val client: HttpClient) {
     ): Result<T> =
         runCoCatching {
             client.post(url) {
+                header(correlationIdHeader, getOrCreateCorrelationId())
                 bearerAuth(token)
                 contentType(contentType)
                 body?.let { setBody(it) }
@@ -61,22 +70,25 @@ class WebClient private constructor(val client: HttpClient) {
     ): Result<T> =
         runCoCatching {
             client.post(url) {
-                contentType(ContentType.Application.Json)
+                header(correlationIdHeader, getOrCreateCorrelationId())
                 basicAuth(clientId, clientSecret)
                 contentType(contentType)
                 body?.let { setBody(it) }
             }.body()
         }
 
-    suspend inline fun<reified T> get(url: String, token: String): Result<T> =
+    suspend inline fun <reified T> get(url: String, token: String): Result<T> =
         runCoCatching {
             client.get(url) {
+                header(correlationIdHeader, getOrCreateCorrelationId())
                 bearerAuth(token)
             }
         }
+
     suspend inline fun delete(url: String, token: String): Result<Unit> =
         runCoCatching {
             client.delete(url) {
+                header(correlationIdHeader, getOrCreateCorrelationId())
                 bearerAuth(token)
             }
         }
@@ -115,5 +127,9 @@ class WebClient private constructor(val client: HttpClient) {
                 )
             )
         }
+    }
+
+    fun getOrCreateCorrelationId(): String {
+        return MDC.get("correlationId") ?: generateCorrelationId()
     }
 }

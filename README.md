@@ -161,6 +161,17 @@ val scheduledMeetings = call { meetingsSDK.listScheduled() }
 // Handle the happy path
 ```
 
+## Tracking Requests
+The SDK allows you to track requests and responses for debugging and monitoring purposes.
+
+```kotlin
+val scheduledMeetings = call {
+    meetingsSDK.withCorrelationId("your-correlation-id") {
+        listScheduled("your-zoom-user-id")
+    }
+}
+```
+
 ## Building from Source Code
 To build the SDK from source code, clone the repository and run the following command:
 
