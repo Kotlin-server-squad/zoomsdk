@@ -17,7 +17,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class MeetingsTest : ZoomTestBase() {
+class MeetingsIntegrationTest : ZoomTestBase() {
 
     private lateinit var meetings: Meetings
 
