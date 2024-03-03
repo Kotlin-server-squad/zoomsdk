@@ -9,6 +9,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
@@ -18,6 +19,9 @@ class ZoomTest {
 
     companion object {
         private const val AUTHORIZATION_CODE = "code"
+        private const val CLIENT_ID = "clientId"
+        private const val CLIENT_SECRET = "clientSecret"
+        private val BEARER_TOKEN = "$CLIENT_ID:$CLIENT_SECRET".encodeBase64()
     }
 
     private lateinit var httpClient: HttpClient
@@ -32,7 +36,10 @@ class ZoomTest {
                 addHandler { request ->
                     when (request.url.encodedPath) {
                         "/oauth/token" -> {
-                            when (request.headers.contains("Authorization", "Bearer $AUTHORIZATION_CODE")) {
+                            when (
+                                request.url.encodedQuery.contains("code=$AUTHORIZATION_CODE") &&
+                                        request.headers.contains("Authorization", "Basic $BEARER_TOKEN")
+                            ) {
                                 true -> {
                                     respond(
                                         content = ByteReadChannel(
@@ -54,7 +61,9 @@ class ZoomTest {
                                 }
 
                                 false -> {
-                                    when ((request.body as TextContent).text) {
+                                    val body =
+                                        if (request.body is TextContent) (request.body as TextContent).text else ""
+                                    when (body) {
                                         "grant_type=refresh_token&refresh_token=refreshToken" -> {
                                             respond(
                                                 content = ByteReadChannel(
@@ -93,29 +102,29 @@ class ZoomTest {
 
     @Test
     fun `should load`() {
-        Zoom.create("clientId", "clientSecret")
+        Zoom.create(CLIENT_ID, CLIENT_SECRET)
     }
 
     @Test
     fun `should load with custom http client`() {
-        Zoom.create("clientId", "clientSecret", httpClient)
+        Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient)
     }
 
     @Test
     fun `should create Authorization module`() {
-        Zoom.create("clientId", "clientSecret").auth()
+        Zoom.create(CLIENT_ID, CLIENT_SECRET).auth()
     }
 
     @Test
     fun `should create Meetings module`(): Unit = runBlocking {
-        val zoom = Zoom.create("clientId", "clientSecret", httpClient)
+        val zoom = Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient)
         val tokens = tokens(zoom.auth())
         zoom.meetings(tokens)
     }
 
     @Test
     fun `should create Users module`(): Unit = runBlocking {
-        val zoom = Zoom.create("clientId", "clientSecret", httpClient)
+        val zoom = Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient)
         val tokens = tokens(zoom.auth())
         zoom.meetings(tokens)
     }

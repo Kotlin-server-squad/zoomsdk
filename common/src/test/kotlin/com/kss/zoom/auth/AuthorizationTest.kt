@@ -9,6 +9,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,6 +21,9 @@ class AuthorizationTest {
 
     companion object {
         private const val AUTHORIZATION_CODE = "code"
+        private const val CLIENT_ID = "clientId"
+        private const val CLIENT_SECRET = "clientSecret"
+        private val BEARER_TOKEN = "$CLIENT_ID:$CLIENT_SECRET".encodeBase64()
     }
 
     private lateinit var authorization: Authorization
@@ -34,7 +38,10 @@ class AuthorizationTest {
                 addHandler { request ->
                     when (request.url.encodedPath) {
                         "/oauth/token" -> {
-                            when (request.headers.contains("Authorization", "Bearer $AUTHORIZATION_CODE")) {
+                            when (
+                                request.url.encodedQuery.contains("code=$AUTHORIZATION_CODE") &&
+                                        request.headers.contains("Authorization", "Basic $BEARER_TOKEN")
+                            ) {
                                 true -> {
                                     respond(
                                         content = ByteReadChannel(
@@ -56,7 +63,8 @@ class AuthorizationTest {
                                 }
 
                                 false -> {
-                                    when ((request.body as TextContent).text) {
+                                    val body = if (request.body is TextContent) (request.body as TextContent).text else ""
+                                    when (body) {
                                         "grant_type=refresh_token&refresh_token=refreshToken" -> {
                                             respond(
                                                 content = ByteReadChannel(
@@ -92,7 +100,7 @@ class AuthorizationTest {
             }
         }
         authorization = AuthorizationImpl.create(
-            AuthorizationConfig.create("clientId", "clientSecret"),
+            AuthorizationConfig.create(CLIENT_ID, CLIENT_SECRET),
             httpClient
         )
     }
