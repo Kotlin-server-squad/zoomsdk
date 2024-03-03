@@ -1,7 +1,7 @@
 package com.kss.zoom.sdk
 
-import com.kss.zoom.sdk.users.CreateUserRequest
-import com.kss.zoom.sdk.users.UserInfo
+import com.kss.zoom.sdk.model.CreateUserRequest
+import com.kss.zoom.sdk.model.UserInfo
 import com.kss.zoom.sdk.users.Users
 import com.kss.zoom.utils.call
 import kotlinx.coroutines.runBlocking

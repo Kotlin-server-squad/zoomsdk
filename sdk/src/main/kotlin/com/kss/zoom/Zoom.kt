@@ -6,8 +6,8 @@ import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.auth.config.AuthorizationConfig
 import com.kss.zoom.sdk.Meetings
 import com.kss.zoom.sdk.MeetingsImpl
-import com.kss.zoom.sdk.Users
-import com.kss.zoom.sdk.UsersImpl
+import com.kss.zoom.sdk.users.Users
+import com.kss.zoom.sdk.users.UsersImpl
 import io.ktor.client.*
 
 class Zoom private constructor(private val authorization: Authorization, private val httpClient: HttpClient? = null) {

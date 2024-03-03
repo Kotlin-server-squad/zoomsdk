@@ -2,11 +2,9 @@ package com.kss.zoom.sdk.users
 
 import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.client.WebClient
-import com.kss.zoom.sdk.ZoomModule
-import com.kss.zoom.sdk.ZoomModuleBase
+import com.kss.zoom.sdk.model.*
 import com.kss.zoom.toWebClient
 import io.ktor.client.*
-import io.ktor.client.utils.EmptyContent.contentType
 import io.ktor.http.*
 
 interface Users : ZoomModule {
@@ -19,8 +17,8 @@ interface Users : ZoomModule {
 }
 
 class UsersImpl private constructor(
-    private val auth: UserTokens,
-    private val client: WebClient
+    auth: UserTokens,
+    client: WebClient
 ) : ZoomModuleBase(auth, client), Users {
     companion object {
         const val ZOOM_API_URL = "https://api.zoom.us/v2"
@@ -31,7 +29,7 @@ class UsersImpl private constructor(
     override suspend fun create(request: CreateUserRequest): Result<CreateUserResponse> {
         return client.post<CreateUserResponse>(
             url = "$ZOOM_API_URL/users",
-            token = auth.accessToken.value,
+            token = userTokens!!.accessToken.value,
             contentType = WebClient.JSON_CONTENT_TYPE,
             body = request
         )
@@ -44,21 +42,21 @@ class UsersImpl private constructor(
     override suspend fun delete(id: UserId): Result<Unit> {
         return client.delete(
             url = "$ZOOM_API_URL/users/$id",
-            token = auth.accessToken.value,
+            token = userTokens!!.accessToken.value,
         )
     }
 
     override suspend fun get(id: UserId): Result<GetUser> {
         return client.get(
             url = "$ZOOM_API_URL/users/$id",
-            token = auth.accessToken.value,
+            token = userTokens!!.accessToken.value,
         )
     }
 
     override suspend fun list(): Result<List<GetUsersResponse>> {
         return client.get(
             url = "$ZOOM_API_URL/users",
-            token = auth.accessToken.value,
+            token = userTokens!!.accessToken.value,
         )
     }
 }
