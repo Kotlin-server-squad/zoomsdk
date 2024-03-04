@@ -5,6 +5,7 @@ import com.kss.zoom.auth.AccessToken
 import com.kss.zoom.auth.RefreshToken
 import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.sdk.model.ZoomModule
+import com.kss.zoom.sdk.model.api.meetings.ScheduledMeetingResponse
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -15,6 +16,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertNull
@@ -24,11 +26,10 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.util.*
-import kotlin.reflect.KClass
 
 abstract class ModuleTest<M : ZoomModule> {
 
-    private val objectMapper = Json {
+    val objectMapper = Json {
         ignoreUnknownKeys = true
     }
 
@@ -87,6 +88,9 @@ abstract class ModuleTest<M : ZoomModule> {
                 json(
                     json = Json {
                         ignoreUnknownKeys = true
+                        serializersModule = SerializersModule {
+                            contextual(ScheduledMeetingResponse::class, ScheduledMeetingResponse.serializer())
+                        }
                     }
                 )
             }
@@ -109,8 +113,8 @@ abstract class ModuleTest<M : ZoomModule> {
     private fun lastRequest(): HttpRequestData? = capturedRequests.lastOrNull()
 
     @OptIn(InternalSerializationApi::class)
-    fun <T : Any> parseJson(json: String, targetClass: KClass<T>): T {
-        val serializer: KSerializer<T> = targetClass.serializer()
+    inline fun <reified T : Any> parseJson(json: String): T {
+        val serializer: KSerializer<T> = T::class.serializer()
         return objectMapper.decodeFromString(serializer, json)
     }
 }

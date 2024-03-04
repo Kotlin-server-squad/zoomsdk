@@ -3,6 +3,10 @@ package com.kss.zoom.sdk
 import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.client.WebClient
 import com.kss.zoom.sdk.model.*
+import com.kss.zoom.sdk.model.domain.users.CreateUser
+import com.kss.zoom.sdk.model.domain.users.UpdateUser
+import com.kss.zoom.sdk.model.domain.users.User
+import com.kss.zoom.sdk.model.domain.users.UserId
 import com.kss.zoom.toWebClient
 import io.ktor.client.*
 

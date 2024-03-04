@@ -2,8 +2,8 @@ package com.kss.zoom.sdk
 
 import com.kss.zoom.Page
 import com.kss.zoom.PagedQuery
-import com.kss.zoom.sdk.model.Meeting
-import com.kss.zoom.sdk.model.ScheduledMeeting
+import com.kss.zoom.sdk.model.domain.meetings.Meeting
+import com.kss.zoom.sdk.model.domain.meetings.ScheduledMeeting
 import com.kss.zoom.utils.call
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
