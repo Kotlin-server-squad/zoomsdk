@@ -4,7 +4,17 @@ import com.kss.zoom.Page
 import com.kss.zoom.PagedQuery
 import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.client.WebClient
-import com.kss.zoom.sdk.model.*
+import com.kss.zoom.sdk.model.ZOOM_API_URL
+import com.kss.zoom.sdk.model.ZoomModule
+import com.kss.zoom.sdk.model.ZoomModuleBase
+import com.kss.zoom.sdk.model.api.PaginationObject
+import com.kss.zoom.sdk.model.api.meetings.CreateOneTimeMeetingRequest
+import com.kss.zoom.sdk.model.api.meetings.MeetingResponse
+import com.kss.zoom.sdk.model.api.meetings.toDomain
+import com.kss.zoom.sdk.model.api.toDomain
+import com.kss.zoom.sdk.model.domain.meetings.Meeting
+import com.kss.zoom.sdk.model.domain.meetings.ScheduledMeeting
+import com.kss.zoom.sdk.model.domain.users.UserId
 import com.kss.zoom.toIsoString
 import com.kss.zoom.toWebClient
 import io.ktor.client.*
@@ -90,14 +100,14 @@ class MeetingsImpl private constructor(
                 duration = duration,
                 timezone = timezone.id
             )
-        ).map { it.toModel() }
+        ).map { it.toDomain() }
     }
 
     override suspend fun get(meetingId: Long): Result<Meeting> =
         client.get<MeetingResponse>(
             url = "$ZOOM_API_URL/meetings/$meetingId",
             token = userTokens!!.accessToken.value
-        ).map { it.toModel() }
+        ).map { it.toDomain() }
 
     override suspend fun delete(meetingId: Long): Result<Boolean> =
         client.delete(
@@ -131,7 +141,7 @@ class MeetingsImpl private constructor(
         return client.get<PaginationObject>(
             url = "$ZOOM_API_URL/users/$userId/meetings?$params",
             token = userTokens!!.accessToken.value
-        ).map { it.toModel() }
+        ).map { it.toDomain() }
     }
 }
 

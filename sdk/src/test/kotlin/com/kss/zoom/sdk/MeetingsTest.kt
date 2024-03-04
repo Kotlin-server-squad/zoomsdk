@@ -1,8 +1,9 @@
 package com.kss.zoom.sdk
 
-import com.kss.zoom.sdk.model.MeetingResponse
-import com.kss.zoom.sdk.model.PaginationObject
-import com.kss.zoom.sdk.model.toModel
+import com.kss.zoom.sdk.model.api.PaginationObject
+import com.kss.zoom.sdk.model.api.meetings.MeetingResponse
+import com.kss.zoom.sdk.model.api.meetings.toDomain
+import com.kss.zoom.sdk.model.api.toDomain
 import com.kss.zoom.utils.call
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -47,7 +48,7 @@ class MeetingsTest : ModuleTest<Meetings>() {
                 timezone = CLIENT_TIMEZONE
             )
         }
-        val expectedMeeting = parseJson(jsonResponse, MeetingResponse::class).toModel()
+        val expectedMeeting = parseJson<MeetingResponse>(jsonResponse).toDomain()
         assertEquals(expectedMeeting, meeting, "Unexpected meeting")
     }
 
@@ -75,7 +76,7 @@ class MeetingsTest : ModuleTest<Meetings>() {
             }
         """.trimIndent()
         val meeting = call { meetings(jsonResponse).get(78723497365) }
-        val expectedMeeting = parseJson(jsonResponse, MeetingResponse::class).toModel()
+        val expectedMeeting = parseJson<MeetingResponse>(jsonResponse).toDomain()
         assertEquals(expectedMeeting, meeting, "Unexpected meeting")
     }
 
@@ -138,7 +139,9 @@ class MeetingsTest : ModuleTest<Meetings>() {
               ]
             }
         """.trimIndent()
-        val expectedPage = parseJson(jsonResponse, PaginationObject::class).toModel()
+        val expectedPage = parseJson<PaginationObject>(
+            jsonResponse,
+        ).toDomain()
         val page = call { meetings(jsonResponse).listScheduled(USER_ID) }
         assertEquals(expectedPage, page, "Unexpected page")
     }
@@ -147,5 +150,4 @@ class MeetingsTest : ModuleTest<Meetings>() {
         module(responseBody) { zoom, tokens ->
             zoom.meetings(tokens)
         }
-
 }
