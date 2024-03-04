@@ -1,5 +1,6 @@
 plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.github.johnrengelman.shadow")
 }
 
 sourceSets {
@@ -23,6 +24,10 @@ val ktor_version: String by project
 dependencies {
     // Project
     implementation(project(":common"))
+
+    // A simple embedded server to capture OAuth2 redirect
+    implementation("io.ktor:ktor-server-core:2.3.8")
+    implementation("io.ktor:ktor-server-netty:2.3.8")
 
     // Tests
     "integrationTestImplementation"(kotlin("test", kotlin_version))

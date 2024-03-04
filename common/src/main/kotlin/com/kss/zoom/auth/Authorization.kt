@@ -68,10 +68,11 @@ class AuthorizationImpl(private val config: AuthorizationConfig, private val cli
 
     override suspend fun authorizeUser(code: AuthorizationCode): Result<UserTokens> =
         client.post<UserAuthorizationResponse>(
-            url = oauthTokenUrl,
-            token = code.value,
+            url = "$oauthTokenUrl?grant_type=authorization_code&code=${code.value}&redirect_uri=http://localhost:8080/callback",
+            clientId = config.clientId.value,
+            clientSecret = config.clientSecret.value,
             contentType = FORM_URL_ENCODED_CONTENT_TYPE,
-            body = "grant_type=authorization_code&code=${code.value}"
+            body = null
         ).toUserTokens()
 
     override suspend fun refreshUserAuthorization(refreshToken: RefreshToken): Result<UserTokens> =

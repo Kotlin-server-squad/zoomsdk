@@ -11,7 +11,8 @@ plugins {
     id("io.ktor.plugin") version "2.3.8" apply false
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22" apply false
     id("org.openapi.generator") version "6.6.0" apply false
-kotlin("jvm") version "1.9.22"
+    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    kotlin("jvm") version "1.9.22"
 }
 
 group = "com.kotlinserversquad"
@@ -70,8 +71,11 @@ subprojects {
 }
 
 dependencies {
-implementation(kotlin("stdlib-jdk8"))}
+    implementation(kotlin("stdlib-jdk8"))
+}
 repositories {
-mavenCentral()}
+    mavenCentral()
+}
 kotlin {
-jvmToolchain(8)}
+    jvmToolchain(8)
+}
