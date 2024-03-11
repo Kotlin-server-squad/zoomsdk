@@ -20,10 +20,7 @@ data class MeetingEndedEvent(
             val uuid: String,
             @SerialName("host_id") val hostId: String,
             val topic: String,
-            val type: Int,
-            @SerialName("start_time") val startTime: String,
-            @SerialName("end_time") val endTime: String,
-            val timezone: String?,
+            val type: Int
         )
     }
 }

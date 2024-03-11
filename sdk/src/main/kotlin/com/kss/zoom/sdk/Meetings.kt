@@ -71,15 +71,21 @@ interface Meetings : ZoomModule {
         query: PagedQuery = PagedQuery(pageNumber = 1, pageSize = 30)
     ): Result<Page<ScheduledMeeting>>
 
-    suspend fun onMeetingCreated(call: ApplicationCall, action: (MeetingCreatedEvent) -> Unit)
+    suspend fun onMeetingCreated(call: ApplicationCall, action: (MeetingCreatedEvent) -> Unit): Result<Unit>
 
-    suspend fun onMeetingStarted(call: ApplicationCall, action: (MeetingStartedEvent) -> Unit)
+    suspend fun onMeetingStarted(call: ApplicationCall, action: (MeetingStartedEvent) -> Unit): Result<Unit>
 
-    suspend fun onMeetingEnded(call: ApplicationCall, action: (MeetingEndedEvent) -> Unit)
+    suspend fun onMeetingEnded(call: ApplicationCall, action: (MeetingEndedEvent) -> Unit): Result<Unit>
 
-    suspend fun onMeetingParticipantJoined(call: ApplicationCall, action: (MeetingParticipantJoinedEvent) -> Unit)
+    suspend fun onMeetingParticipantJoined(
+        call: ApplicationCall,
+        action: (MeetingParticipantJoinedEvent) -> Unit
+    ): Result<Unit>
 
-    suspend fun onMeetingParticipantLeft(call: ApplicationCall, action: (MeetingParticipantLeftEvent) -> Unit)
+    suspend fun onMeetingParticipantLeft(
+        call: ApplicationCall,
+        action: (MeetingParticipantLeftEvent) -> Unit
+    ): Result<Unit>
 }
 
 class MeetingsImpl private constructor(

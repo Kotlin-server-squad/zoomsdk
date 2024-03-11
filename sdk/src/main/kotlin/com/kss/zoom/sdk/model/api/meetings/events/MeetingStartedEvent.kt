@@ -22,7 +22,7 @@ data class MeetingStartedEvent(
             val topic: String,
             val type: Int,
             @SerialName("start_time") val startTime: String,
-            val timezone: String?,
+            val timezone: String? = null,
             val duration: Short
         )
     }

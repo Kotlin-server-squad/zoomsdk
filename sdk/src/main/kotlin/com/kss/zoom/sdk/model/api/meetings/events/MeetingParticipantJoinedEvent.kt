@@ -28,18 +28,16 @@ data class MeetingParticipantJoinedEvent(
         ) {
             @Serializable
             data class Participant(
-                val id: String?,
+                val id: String? = null,
                 @SerialName("user_id") val userId: String,
                 @SerialName("user_name") val username: String,
-                @SerialName("participant_uuid") val participantUuid: String?,
+                @SerialName("participant_uuid") val participantUuid: String? = null,
                 @SerialName("join_time") val joinTime: String,
                 val email: String,
-                @SerialName("registrant_id") val registrantId: String?,
-                @SerialName("participant_user_id") val participantUserId: String?,
-                @SerialName("customer_key") val customerKey: String?,
-                @SerialName("phone_number") val phoneNumber: String?,
-                val role: String,
-                val status: String
+                @SerialName("registrant_id") val registrantId: String? = null,
+                @SerialName("participant_user_id") val participantUserId: String? = null,
+                @SerialName("customer_key") val customerKey: String? = null,
+                @SerialName("phone_number") val phoneNumber: String? = null
             )
         }
     }

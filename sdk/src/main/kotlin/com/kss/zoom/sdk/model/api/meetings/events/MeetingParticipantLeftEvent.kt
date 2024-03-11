@@ -22,23 +22,23 @@ data class MeetingParticipantLeftEvent(
             val topic: String,
             val type: Int,
             @SerialName("start_time") val startTime: String,
-            val timezone: String?,
+            val timezone: String? = null,
             val duration: Short,
             val participant: Participant
         ) {
             @Serializable
             data class Participant(
-                val id: String?,
+                val id: String? = null,
                 @SerialName("user_id") val userId: String,
-                @SerialName("user_name") val username: String?,
-                @SerialName("participant_uuid") val participantUuid: String?,
+                @SerialName("user_name") val username: String? = null,
+                @SerialName("participant_uuid") val participantUuid: String? = null,
                 @SerialName("leave_time") val leaveTime: String,
-                @SerialName("leave_reason") val leaveReason: String?,
+                @SerialName("leave_reason") val leaveReason: String? = null,
                 val email: String,
-                @SerialName("registrant_id") val registrantId: String?,
-                @SerialName("participant_user_id") val participantUserId: String?,
-                @SerialName("customer_key") val customerKey: String?,
-                @SerialName("phone_number") val phoneNumber: String?
+                @SerialName("registrant_id") val registrantId: String? = null,
+                @SerialName("participant_user_id") val participantUserId: String? = null,
+                @SerialName("customer_key") val customerKey: String? = null,
+                @SerialName("phone_number") val phoneNumber: String? = null
             )
         }
     }

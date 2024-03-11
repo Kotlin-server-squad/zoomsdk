@@ -45,7 +45,12 @@ abstract class ModuleTest<M : ZoomModule> {
     abstract fun module(): M
 
     fun <M : ZoomModule> module(responseBody: String? = null, block: (Zoom, UserTokens) -> M): M {
-        val zoom = Zoom.create("clientId", "clientSecret", httpClient = createHttpClient(responseBody))
+        val zoom = Zoom.create(
+            clientId = "clientId",
+            clientSecret = "clientSecret",
+            verificationToken = "test-token",
+            httpClient = createHttpClient(responseBody)
+        )
         val tokens = UserTokens(
             accessToken = AccessToken("accessToken", 3599),
             refreshToken = RefreshToken("refreshToken")

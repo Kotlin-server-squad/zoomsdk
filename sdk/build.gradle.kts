@@ -33,6 +33,8 @@ dependencies {
     implementation("commons-codec:commons-codec:1.15")
 
     // Tests
+    testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
+
     "integrationTestImplementation"(kotlin("test", kotlin_version))
     "integrationTestImplementation"(kotlin("test-junit5", kotlin_version))
     "integrationTestImplementation"("org.junit.jupiter:junit-jupiter:$junit_jupiter_version")

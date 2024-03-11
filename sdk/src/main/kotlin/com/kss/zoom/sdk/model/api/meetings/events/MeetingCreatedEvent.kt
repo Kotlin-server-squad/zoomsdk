@@ -18,16 +18,16 @@ data class MeetingCreatedEvent(
     ) {
         @Serializable
         data class Data(
-            val id: String,
+            val id: Long,
             val uuid: String,
             @SerialName("host_id") val hostId: String,
             val topic: String,
             val type: Int,
-            @SerialName("start_time") val startTime: String?,
-            val timezone: String?,
+            @SerialName("start_time") val startTime: String? = null,
+            val timezone: String? = null,
             val duration: Short,
             @SerialName("join_url") val joinUrl: String,
-            val password: String?
+            val password: String? = null
         )
     }
 }

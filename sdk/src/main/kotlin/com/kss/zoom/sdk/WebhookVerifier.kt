@@ -13,10 +13,14 @@ interface WebhookVerifier {
         const val PREFIX = "v0"
         const val DEFAULT_SIGNATURE_HEADER_NAME = "x-zm-signature"
         const val DEFAULT_TIMESTAMP_HEADER_NAME = "x-zm-request-timestamp"
-        fun create(verificationToken: String): WebhookVerifier = WebhookVerifierImpl(verificationToken)
+        fun create(
+            verificationToken: String,
+            signatureHeaderName: String? = null,
+            timestampHeaderName: String? = null
+        ): WebhookVerifier = WebhookVerifierImpl(verificationToken, signatureHeaderName, timestampHeaderName)
     }
 
-    suspend fun verify(call: ApplicationCall): Boolean
+    suspend fun verify(call: ApplicationCall): Result<String>
 }
 
 class WebhookVerifierImpl(
@@ -26,16 +30,16 @@ class WebhookVerifierImpl(
 ) :
     WebhookVerifier {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
-    override suspend fun verify(call: ApplicationCall): Boolean {
+    override suspend fun verify(call: ApplicationCall): Result<String> {
         val signature = call.request.header(signatureHeaderName ?: WebhookVerifier.DEFAULT_SIGNATURE_HEADER_NAME)
         if (signature == null) {
             logger.debug("No signature found in request")
-            return false
+            return Result.failure(IllegalArgumentException("No signature found in request"))
         }
         val timestamp = call.request.header(timestampHeaderName ?: WebhookVerifier.DEFAULT_TIMESTAMP_HEADER_NAME)
         if (timestamp == null) {
             logger.debug("No timestamp found in request")
-            return false
+            return Result.failure(IllegalArgumentException("No timestamp found in request"))
         }
         val payload = call.request
             .receiveChannel()
@@ -46,9 +50,9 @@ class WebhookVerifierImpl(
 
         if (signature != "$PREFIX=$hashedMessage") {
             logger.debug("Signature does not match")
-            return false
+            return Result.failure(IllegalArgumentException("Signature does not match"))
         }
 
-        return true
+        return Result.success(payload)
     }
 }
