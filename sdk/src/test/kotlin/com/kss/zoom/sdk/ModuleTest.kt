@@ -4,7 +4,6 @@ import com.kss.zoom.Zoom
 import com.kss.zoom.auth.AccessToken
 import com.kss.zoom.auth.RefreshToken
 import com.kss.zoom.auth.UserTokens
-import com.kss.zoom.sdk.model.ZoomModule
 import com.kss.zoom.sdk.model.api.meetings.ScheduledMeetingResponse
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -46,7 +45,12 @@ abstract class ModuleTest<M : ZoomModule> {
     abstract fun module(): M
 
     fun <M : ZoomModule> module(responseBody: String? = null, block: (Zoom, UserTokens) -> M): M {
-        val zoom = Zoom.create("clientId", "clientSecret", createHttpClient(responseBody))
+        val zoom = Zoom.create(
+            clientId = "clientId",
+            clientSecret = "clientSecret",
+            verificationToken = "test-token",
+            httpClient = createHttpClient(responseBody)
+        )
         val tokens = UserTokens(
             accessToken = AccessToken("accessToken", 3599),
             refreshToken = RefreshToken("refreshToken")

@@ -47,6 +47,7 @@ subprojects {
         "testImplementation"("io.ktor:ktor-client-mock:$ktor_version")
         "testImplementation"(kotlin("test", kotlin_version))
         "testImplementation"(kotlin("test-junit5", kotlin_version))
+        "testImplementation"("io.mockk:mockk:1.12.0")
         "testImplementation"("org.junit.jupiter:junit-jupiter:$junit_jupiter_version")
         "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
     }

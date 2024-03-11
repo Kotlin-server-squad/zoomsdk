@@ -107,7 +107,7 @@ class ZoomTest {
 
     @Test
     fun `should load with custom http client`() {
-        Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient)
+        Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient = httpClient)
     }
 
     @Test
@@ -117,14 +117,14 @@ class ZoomTest {
 
     @Test
     fun `should create Meetings module`(): Unit = runBlocking {
-        val zoom = Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient)
+        val zoom = Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient = httpClient)
         val tokens = tokens(zoom.auth())
         zoom.meetings(tokens)
     }
 
     @Test
     fun `should create Users module`(): Unit = runBlocking {
-        val zoom = Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient)
+        val zoom = Zoom.create(CLIENT_ID, CLIENT_SECRET, httpClient = httpClient)
         val tokens = tokens(zoom.auth())
         zoom.meetings(tokens)
     }

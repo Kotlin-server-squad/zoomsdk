@@ -5,11 +5,10 @@ import com.kss.zoom.PagedQuery
 import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.client.WebClient
 import com.kss.zoom.sdk.model.ZOOM_API_URL
-import com.kss.zoom.sdk.model.ZoomModule
-import com.kss.zoom.sdk.model.ZoomModuleBase
 import com.kss.zoom.sdk.model.api.PaginationObject
 import com.kss.zoom.sdk.model.api.meetings.CreateOneTimeMeetingRequest
 import com.kss.zoom.sdk.model.api.meetings.MeetingResponse
+import com.kss.zoom.sdk.model.api.meetings.events.*
 import com.kss.zoom.sdk.model.api.meetings.toDomain
 import com.kss.zoom.sdk.model.api.toDomain
 import com.kss.zoom.sdk.model.domain.meetings.Meeting
@@ -18,6 +17,7 @@ import com.kss.zoom.sdk.model.domain.users.UserId
 import com.kss.zoom.toIsoString
 import com.kss.zoom.toWebClient
 import io.ktor.client.*
+import io.ktor.server.application.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -70,15 +70,36 @@ interface Meetings : ZoomModule {
         userId: UserId,
         query: PagedQuery = PagedQuery(pageNumber = 1, pageSize = 30)
     ): Result<Page<ScheduledMeeting>>
+
+    suspend fun onMeetingCreated(call: ApplicationCall, action: (MeetingCreatedEvent) -> Unit): Result<Unit>
+
+    suspend fun onMeetingStarted(call: ApplicationCall, action: (MeetingStartedEvent) -> Unit): Result<Unit>
+
+    suspend fun onMeetingEnded(call: ApplicationCall, action: (MeetingEndedEvent) -> Unit): Result<Unit>
+
+    suspend fun onMeetingParticipantJoined(
+        call: ApplicationCall,
+        action: (MeetingParticipantJoinedEvent) -> Unit
+    ): Result<Unit>
+
+    suspend fun onMeetingParticipantLeft(
+        call: ApplicationCall,
+        action: (MeetingParticipantLeftEvent) -> Unit
+    ): Result<Unit>
 }
 
 class MeetingsImpl private constructor(
     auth: UserTokens,
-    client: WebClient
-) : ZoomModuleBase(auth, client), Meetings {
+    client: WebClient,
+    webhookVerifier: WebhookVerifier? = null
+) : ZoomModuleBase(auth, client, webhookVerifier), Meetings {
     companion object {
-        fun create(auth: UserTokens, httpClient: HttpClient? = null): Meetings =
-            MeetingsImpl(auth, httpClient.toWebClient())
+        fun create(
+            auth: UserTokens,
+            httpClient: HttpClient? = null,
+            webhookVerifier: WebhookVerifier? = null
+        ): Meetings =
+            MeetingsImpl(auth, httpClient.toWebClient(), webhookVerifier)
     }
 
     override suspend fun create(
@@ -143,5 +164,24 @@ class MeetingsImpl private constructor(
             token = userTokens!!.accessToken.value
         ).map { it.toDomain() }
     }
+
+    override suspend fun onMeetingCreated(call: ApplicationCall, action: (MeetingCreatedEvent) -> Unit) =
+        handleEvent(call, SupportedEvents.Meeting.CREATED, action)
+
+    override suspend fun onMeetingStarted(call: ApplicationCall, action: (MeetingStartedEvent) -> Unit) =
+        handleEvent(call, SupportedEvents.Meeting.STARTED, action)
+
+    override suspend fun onMeetingEnded(call: ApplicationCall, action: (MeetingEndedEvent) -> Unit) =
+        handleEvent(call, SupportedEvents.Meeting.ENDED, action)
+
+    override suspend fun onMeetingParticipantJoined(
+        call: ApplicationCall,
+        action: (MeetingParticipantJoinedEvent) -> Unit
+    ) = handleEvent(call, SupportedEvents.Meeting.PARTICIPANT_JOINED, action)
+
+    override suspend fun onMeetingParticipantLeft(
+        call: ApplicationCall,
+        action: (MeetingParticipantLeftEvent) -> Unit
+    ) = handleEvent(call, SupportedEvents.Meeting.PARTICIPANT_LEFT, action)
 }
 

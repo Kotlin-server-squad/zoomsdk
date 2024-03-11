@@ -8,24 +8,35 @@ import com.kss.zoom.sdk.Meetings
 import com.kss.zoom.sdk.MeetingsImpl
 import com.kss.zoom.sdk.Users
 import com.kss.zoom.sdk.UsersImpl
+import com.kss.zoom.sdk.WebhookVerifier
 import io.ktor.client.*
 
-class Zoom private constructor(private val authorization: Authorization, private val httpClient: HttpClient? = null) {
+class Zoom private constructor(
+    private val authorization: Authorization,
+    private val httpClient: HttpClient? = null,
+    private val webhookVerifier: WebhookVerifier? = null
+) {
 
     fun auth(): Authorization = authorization
 
     fun meetings(tokens: UserTokens): Meetings =
-        MeetingsImpl.create(tokens, httpClient)
+        MeetingsImpl.create(tokens, httpClient, webhookVerifier)
 
     fun users(tokens: UserTokens): Users =
         UsersImpl.create(tokens, httpClient)
 
     companion object {
-        fun create(clientId: String, clientSecret: String, httpClient: HttpClient? = null): Zoom {
+        fun create(
+            clientId: String,
+            clientSecret: String,
+            verificationToken: String? = null,
+            httpClient: HttpClient? = null
+        ): Zoom {
             val authorization = AuthorizationImpl.create(
                 AuthorizationConfig.create(clientId, clientSecret), httpClient
             )
-            return Zoom(authorization, httpClient)
+            val webhookVerifier = verificationToken?.let { WebhookVerifier.create(it) }
+            return Zoom(authorization, httpClient, webhookVerifier)
         }
     }
 }
