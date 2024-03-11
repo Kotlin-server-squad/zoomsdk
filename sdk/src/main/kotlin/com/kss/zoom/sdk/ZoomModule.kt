@@ -36,28 +36,73 @@ abstract class ZoomModuleBase(
                 return Result.success(Unit)
             }
             val result = webhookVerifier.verify(call)
-            if (result.isFailure) {
-                logger.warn("Failed to verify request signature: {}", result.exceptionOrNull()?.message)
-                return Result.failure(
-                    result.exceptionOrNull() ?: IllegalStateException("Failed to verify request signature")
-                )
-            }
-            val jsonString = result.getOrThrow()
-            val zoomEvent = json.decodeFromString<ZoomEvent>(jsonString)
+            return when {
+                result.isFailure -> {
+                    logger.warn("Failed to verify request signature: {}", result.exceptionOrNull()?.message)
+                    Result.failure(
+                        result.exceptionOrNull() ?: IllegalStateException("Failed to verify request signature")
+                    )
+                }
 
-            if (zoomEvent.event != eventName) {
-                logger.debug("Ignoring event: {}", zoomEvent.event)
-                return Result.success(Unit)
+                else -> {
+                    handleEvent<E>(result.getOrThrow(), eventName, action)
+                }
             }
-            val targetEvent = json.decodeFromString<E>(jsonString)
-            logger.debug("Received {} event: {}", eventName, targetEvent)
-            action(targetEvent)
-            return Result.success(Unit)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             logger.warn("Failed to parse event {}", eventName, e)
             return Result.failure(e)
         }
+    }
+
+    protected suspend inline fun <reified E : Any> handleEvent(
+        eventName: String,
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (E) -> Unit
+    ): Result<Unit> {
+        try {
+            if (webhookVerifier == null) {
+                logger.warn("No webhook verifier set. Skipping event handling.")
+                return Result.success(Unit)
+            }
+            val result = webhookVerifier.verify(payload, timestamp, signature)
+            when {
+                result.isFailure -> {
+                    logger.warn("Failed to verify request signature: {}", result.exceptionOrNull()?.message)
+                    return Result.failure(
+                        result.exceptionOrNull() ?: IllegalStateException("Failed to verify request signature")
+                    )
+                }
+
+                else -> {
+                    return handleEvent(result.getOrThrow(), eventName, action)
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logger.warn("Failed to parse event {}", eventName, e)
+            return Result.failure(e)
+        }
+    }
+
+    protected inline fun <reified E : Any> handleEvent(
+        payload: String,
+        eventName: String,
+        action: (E) -> Unit
+    ): Result<Unit> {
+        val zoomEvent = json.decodeFromString<ZoomEvent>(payload)
+
+        if (zoomEvent.event != eventName) {
+            logger.debug("Ignoring event: {}", zoomEvent.event)
+            return Result.success(Unit)
+        }
+        val targetEvent = json.decodeFromString<E>(payload)
+        logger.debug("Received {} event: {}", eventName, targetEvent)
+        action(targetEvent)
+        return Result.success(Unit)
     }
 }

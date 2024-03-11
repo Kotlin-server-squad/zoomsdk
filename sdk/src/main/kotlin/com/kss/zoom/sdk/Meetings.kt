@@ -72,18 +72,52 @@ interface Meetings : ZoomModule {
     ): Result<Page<ScheduledMeeting>>
 
     suspend fun onMeetingCreated(call: ApplicationCall, action: (MeetingCreatedEvent) -> Unit): Result<Unit>
+    suspend fun onMeetingCreated(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingCreatedEvent) -> Unit
+    ): Result<Unit>
 
     suspend fun onMeetingStarted(call: ApplicationCall, action: (MeetingStartedEvent) -> Unit): Result<Unit>
 
+    suspend fun onMeetingStarted(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingStartedEvent) -> Unit
+    ): Result<Unit>
+
     suspend fun onMeetingEnded(call: ApplicationCall, action: (MeetingEndedEvent) -> Unit): Result<Unit>
+
+    suspend fun onMeetingEnded(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingEndedEvent) -> Unit
+    ): Result<Unit>
 
     suspend fun onMeetingParticipantJoined(
         call: ApplicationCall,
         action: (MeetingParticipantJoinedEvent) -> Unit
     ): Result<Unit>
 
+    suspend fun onMeetingParticipantJoined(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingParticipantJoinedEvent) -> Unit
+    ): Result<Unit>
+
     suspend fun onMeetingParticipantLeft(
         call: ApplicationCall,
+        action: (MeetingParticipantLeftEvent) -> Unit
+    ): Result<Unit>
+
+    suspend fun onMeetingParticipantLeft(
+        payload: String,
+        timestamp: Long,
+        signature: String,
         action: (MeetingParticipantLeftEvent) -> Unit
     ): Result<Unit>
 }
@@ -168,20 +202,60 @@ class MeetingsImpl private constructor(
     override suspend fun onMeetingCreated(call: ApplicationCall, action: (MeetingCreatedEvent) -> Unit) =
         handleEvent(call, SupportedEvents.Meeting.CREATED, action)
 
+    override suspend fun onMeetingCreated(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingCreatedEvent) -> Unit
+    ): Result<Unit> =
+        handleEvent(SupportedEvents.Meeting.CREATED, payload, timestamp, signature, action)
+
     override suspend fun onMeetingStarted(call: ApplicationCall, action: (MeetingStartedEvent) -> Unit) =
         handleEvent(call, SupportedEvents.Meeting.STARTED, action)
 
+    override suspend fun onMeetingStarted(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingStartedEvent) -> Unit
+    ): Result<Unit> =
+        handleEvent(SupportedEvents.Meeting.STARTED, payload, timestamp, signature, action)
+
     override suspend fun onMeetingEnded(call: ApplicationCall, action: (MeetingEndedEvent) -> Unit) =
         handleEvent(call, SupportedEvents.Meeting.ENDED, action)
+
+    override suspend fun onMeetingEnded(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingEndedEvent) -> Unit
+    ): Result<Unit> =
+        handleEvent(SupportedEvents.Meeting.ENDED, payload, timestamp, signature, action)
 
     override suspend fun onMeetingParticipantJoined(
         call: ApplicationCall,
         action: (MeetingParticipantJoinedEvent) -> Unit
     ) = handleEvent(call, SupportedEvents.Meeting.PARTICIPANT_JOINED, action)
 
+    override suspend fun onMeetingParticipantJoined(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingParticipantJoinedEvent) -> Unit
+    ): Result<Unit> =
+        handleEvent(SupportedEvents.Meeting.PARTICIPANT_JOINED, payload, timestamp, signature, action)
+
     override suspend fun onMeetingParticipantLeft(
         call: ApplicationCall,
         action: (MeetingParticipantLeftEvent) -> Unit
     ) = handleEvent(call, SupportedEvents.Meeting.PARTICIPANT_LEFT, action)
+
+    override suspend fun onMeetingParticipantLeft(
+        payload: String,
+        timestamp: Long,
+        signature: String,
+        action: (MeetingParticipantLeftEvent) -> Unit
+    ): Result<Unit> =
+        handleEvent(SupportedEvents.Meeting.PARTICIPANT_LEFT, payload, timestamp, signature, action)
 }
 

@@ -4,4 +4,5 @@ plugins {
 rootProject.name = "zoom-sdk"
 
 include(":common")
+include(":examples")
 include(":sdk")
