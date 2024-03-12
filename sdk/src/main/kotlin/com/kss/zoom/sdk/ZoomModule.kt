@@ -12,7 +12,7 @@ import kotlin.coroutines.cancellation.CancellationException
 interface ZoomModule
 
 abstract class ZoomModuleBase(
-    userTokens: UserTokens,
+    userTokens: UserTokens? = null,
     val client: WebClient,
     val webhookVerifier: WebhookVerifier? = null
 ) : ZoomModule {

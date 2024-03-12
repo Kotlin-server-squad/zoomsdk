@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.kss.zoom.Zoom
-import com.kss.zoom.auth.AccessToken
-import com.kss.zoom.auth.RefreshToken
-import com.kss.zoom.auth.UserTokens
 import com.kss.zoom.sdk.Meetings
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -31,13 +28,7 @@ class AppConfig {
             clientId = clientId,
             clientSecret = clientSecret,
             verificationToken = verificationToken
-        ).meetings(
-            // TODO make optional: Server-to-Server Auth doesn't need these
-            UserTokens(
-                accessToken = AccessToken("accessToken", 3599),
-                refreshToken = RefreshToken("refreshToken")
-            )
-        )
+        ).meetings()
     }
 
     @Bean

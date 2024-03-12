@@ -17,12 +17,12 @@ interface Users : ZoomModule {
 }
 
 class UsersImpl private constructor(
-    auth: UserTokens,
+    tokens: UserTokens? = null,
     client: WebClient
-) : ZoomModuleBase(auth, client), Users {
+) : ZoomModuleBase(tokens, client), Users {
     companion object {
-        fun create(auth: UserTokens, httpClient: HttpClient? = null): Users =
-            UsersImpl(auth, httpClient.toWebClient())
+        fun create(tokens: UserTokens? = null, httpClient: HttpClient? = null): Users =
+            UsersImpl(tokens, httpClient.toWebClient())
     }
 
     override suspend fun create(request: CreateUser): Result<User> {

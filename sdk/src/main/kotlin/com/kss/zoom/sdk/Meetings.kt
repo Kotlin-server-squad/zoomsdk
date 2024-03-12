@@ -123,17 +123,17 @@ interface Meetings : ZoomModule {
 }
 
 class MeetingsImpl private constructor(
-    auth: UserTokens,
+    tokens: UserTokens? = null,
     client: WebClient,
     webhookVerifier: WebhookVerifier? = null
-) : ZoomModuleBase(auth, client, webhookVerifier), Meetings {
+) : ZoomModuleBase(tokens, client, webhookVerifier), Meetings {
     companion object {
         fun create(
-            auth: UserTokens,
+            tokens: UserTokens? = null,
             httpClient: HttpClient? = null,
             webhookVerifier: WebhookVerifier? = null
         ): Meetings =
-            MeetingsImpl(auth, httpClient.toWebClient(), webhookVerifier)
+            MeetingsImpl(tokens, httpClient.toWebClient(), webhookVerifier)
     }
 
     override suspend fun create(
