@@ -186,7 +186,7 @@ class MeetingsImpl private constructor(
     }
 
     override suspend fun listScheduled(userId: UserId, query: PagedQuery): Result<Page<ScheduledMeeting>> {
-        val params = StringBuilder("?type=scheduled&page_number=${query.pageNumber}&page_size=${query.pageSize}")
+        val params = StringBuilder("type=scheduled&page_number=${query.pageNumber}&page_size=${query.pageSize}")
         query.filter?.let {
             params.append("&from=${it.startDate.toIsoString()}&to=${it.endDate.toIsoString()}")
         }
