@@ -19,10 +19,10 @@ class Zoom private constructor(
 
     fun auth(): Authorization = authorization
 
-    fun meetings(tokens: UserTokens): Meetings =
+    fun meetings(tokens: UserTokens? = null): Meetings =
         MeetingsImpl.create(tokens, httpClient, webhookVerifier)
 
-    fun users(tokens: UserTokens): Users =
+    fun users(tokens: UserTokens? = null): Users =
         UsersImpl.create(tokens, httpClient)
 
     companion object {

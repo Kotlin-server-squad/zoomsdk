@@ -1,0 +1,3 @@
+dependencies {
+    // Define reusable dependencies
+}

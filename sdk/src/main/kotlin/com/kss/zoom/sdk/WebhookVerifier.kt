@@ -21,6 +21,8 @@ interface WebhookVerifier {
     }
 
     suspend fun verify(call: ApplicationCall): Result<String>
+
+    suspend fun verify(payload: String, timestamp: Long?, signature: String?): Result<String>
 }
 
 class WebhookVerifierImpl(
@@ -30,21 +32,26 @@ class WebhookVerifierImpl(
 ) :
     WebhookVerifier {
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
+
     override suspend fun verify(call: ApplicationCall): Result<String> {
         val signature = call.request.header(signatureHeaderName ?: WebhookVerifier.DEFAULT_SIGNATURE_HEADER_NAME)
-        if (signature == null) {
-            logger.debug("No signature found in request")
-            return Result.failure(IllegalArgumentException("No signature found in request"))
-        }
         val timestamp = call.request.header(timestampHeaderName ?: WebhookVerifier.DEFAULT_TIMESTAMP_HEADER_NAME)
-        if (timestamp == null) {
-            logger.debug("No timestamp found in request")
-            return Result.failure(IllegalArgumentException("No timestamp found in request"))
-        }
         val payload = call.request
             .receiveChannel()
             .readRemaining()
             .readText()
+        return verify(payload, timestamp?.toLong(), signature)
+    }
+
+    override suspend fun verify(payload: String, timestamp: Long?, signature: String?): Result<String> {
+        if (signature == null) {
+            logger.debug("No signature found in request")
+            return Result.failure(IllegalArgumentException("No signature found in request"))
+        }
+        if (timestamp == null) {
+            logger.debug("No timestamp found in request")
+            return Result.failure(IllegalArgumentException("No timestamp found in request"))
+        }
         val message = "$PREFIX:$timestamp:$payload"
         val hashedMessage = HmacUtils(HmacAlgorithms.HMAC_SHA_256, verificationToken).hmacHex(message)
 

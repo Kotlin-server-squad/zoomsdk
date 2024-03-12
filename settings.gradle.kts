@@ -5,3 +5,7 @@ rootProject.name = "zoom-sdk"
 
 include(":common")
 include(":sdk")
+
+// Examples
+include(":examples:ktor-webhooks")
+include(":examples:spring-boot-webhooks")
