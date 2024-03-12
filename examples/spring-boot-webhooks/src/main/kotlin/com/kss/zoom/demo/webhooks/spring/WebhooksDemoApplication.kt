@@ -1,4 +1,4 @@
-package com.kss.zoom.demo.webhooks
+package com.kss.zoom.demo.webhooks.spring
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

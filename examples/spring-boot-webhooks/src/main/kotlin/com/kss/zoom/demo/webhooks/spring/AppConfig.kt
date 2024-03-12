@@ -1,4 +1,4 @@
-package com.kss.zoom.demo.webhooks
+package com.kss.zoom.demo.webhooks.spring
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper

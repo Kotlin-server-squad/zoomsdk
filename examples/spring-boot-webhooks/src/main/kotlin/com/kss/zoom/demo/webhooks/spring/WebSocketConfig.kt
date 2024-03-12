@@ -1,4 +1,4 @@
-package com.kss.zoom.demo.webhooks
+package com.kss.zoom.demo.webhooks.spring
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.socket.config.annotation.EnableWebSocket
