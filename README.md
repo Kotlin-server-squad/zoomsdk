@@ -106,7 +106,7 @@ import com.kss.zoom.call
 // Once you have authorized the user, use the pair of tokens to instantiate the module you need
 
 // Create an instance of Meetings SDK
-val meetingsSDK = zoom.meetings(userTokens)
+val meetingSDK = zoom.meetings(userTokens)
 
 // Create an instance of Users SDK
 val usersSDK = zoom.users(userTokens)
@@ -122,7 +122,7 @@ All API calls are suspendable functions, which means they must be called from a 
 import com.kss.zoom.utils.call
 
 // This is a non-blocking call via a coroutine.
-val scheduledMeetings = call { meetingsSDK.listScheduled("your-zoom-user-id") }
+val scheduledMeetings = call { meetingSDK.listScheduled("your-zoom-user-id") }
 ```
 If it suits you better, you can use the `callAsync` function to get a `CompletableFuture`.
 
@@ -131,11 +131,11 @@ import com.kss.zoom.utils.future
 
 // This is a non-blocking call, it returns a CompletableFuture.
 // It can be invoked from a coroutine or from a non-coroutine context.
-val scheduledMeetings = callAsync { meetingsSDK.listScheduled() }
+val scheduledMeetings = callAsync { meetingSDK.listScheduled() }
 
 // It is a good fit for Java interop. Provide your own executor if needed.
 val executor = Executors.newFixedThreadPool(4)
-val scheduledMeetings = callAsync(executor) { meetingsSDK.listScheduled("your-zoom-user-id") }
+val scheduledMeetings = callAsync(executor) { meetingSDK.listScheduled("your-zoom-user-id") }
 ```
 
 ### Blocking
@@ -146,11 +146,11 @@ import com.kss.zoom.utils.callSync
 
 // This call blocks the current thread until the result is available.
 // It is designed to be called from a non-coroutine context.
-val scheduledMeetings = callSync { meetingsSDK.listScheduled("your-zoom-user-id") }
+val scheduledMeetings = callSync { meetingSDK.listScheduled("your-zoom-user-id") }
 
 // It is a good fit for Java interop. Provide your own executor if needed.
 val executor = Executors.newFixedThreadPool(4)
-val scheduledMeetings = callSync(executor) { meetingsSDK.listScheduled() }
+val scheduledMeetings = callSync(executor) { meetingSDK.listScheduled() }
 ```
 
 ## Exception Handling
@@ -165,7 +165,7 @@ It comes with a set of extension functions to make it easier to work with.
 
 ```kotlin
 
-val result = meetingsSDK.listScheduled(userAuth.accessToken)
+val result = meetingSDK.listScheduled("your-zoom-user-id")
 when {
     result.isSuccess -> {
         val scheduledMeetings = result.getOrThrow()
@@ -185,7 +185,7 @@ Tired of pattern matching, or a constant calls to `getOrThrow()`? You can use th
 ```kotlin
 
 // This will throw a ZoomException if the API call fails
-val scheduledMeetings = call { meetingsSDK.listScheduled() }
+val scheduledMeetings = call { meetingSDK.listScheduled("your-zoom-user-id") }
 
 // Handle the happy path
 ```
@@ -195,7 +195,7 @@ The SDK allows you to track requests and responses for debugging and monitoring 
 
 ```kotlin
 val scheduledMeetings = call {
-    meetingsSDK.withCorrelationId("your-correlation-id") {
+    meetingSDK.withCorrelationId("your-correlation-id") {
         listScheduled("your-zoom-user-id")
     }
 }
