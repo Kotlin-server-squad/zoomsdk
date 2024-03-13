@@ -28,7 +28,6 @@ class WebhookController(
         val payload = request.reader.readText()
         callAsync {
             meetings.onMeetingCreated(payload, timestamp, signature) { notifyClients(it) }
-            meetings.onMeetingStarted(payload, timestamp, signature) { notifyClients(it) }
         }
         logger.info("Responding OK to meetings webhook")
     }
