@@ -12,26 +12,55 @@ It provides a simple way to make API calls to Zoom.
 
 ## How to Use It?
 
+### Initialize the SDK
+
+To use the SDK, you need to initialize it with your Zoom app credentials.
 ```kotlin
 import com.kss.zoomsdk.Zoom
 
-// Initialize the Zoom SDK with your credentials
+// Initialize the SDK with your Zoom app credentials
+val zoom = Zoom.create("clientId", "clientSecret")
+```
+
+Once you have initialized the SDK, you can use it to make API calls to Zoom.
+
+```kotlin
+// Use the SDK to make API calls
+val meetingSDK = zoom.meetings()
+
+// This returns a list of scheduled meetings in a Result type
+val result = meetingSDK.listScheduled("your-zoom-user-id")
+
+// This returns a list of scheduled meetings in a non-blocking way
+// It might fail with an exception
+val scheduledMeetings = call { meetingSDK.listScheduled("your-zoom-user-id") }
+```
+
+### OAuth 2.0 Authentication
+If you need to make authenticated requests to the Zoom API on behalf of a user, 
+you need to go through the OAuth 2.0 authentication process.
+
+```kotlin
+import com.kss.zoomsdk.Zoom
+
+// Initialize the Zoom SDK with your Zoom app credentials
 val zoom = Zoom.create("clientId", "clientSecret")
 
-// Authorize a user
-val authUrl = zoom.auth().getAuthorizationUrl(URL("http://localhost:8080/callback"))
+// Use the authorization module to authorize a user
+val auth = zoom.auth()
+
+// Fetch the authorization URL using the callback URL you've registered in the Zoom App Marketplace
+val authUrl = auth.getAuthorizationUrl("http://localhost:8080/callback")
 
 // Redirect the user to the authUrl and get the authorization code in the callback
-val authCode = AuthorizationCode("code-sent-by-zoom")
+// This happens in your web application
 
-// Authorize the user with the auth code - the result is a pair of access and refresh tokens
-val userTokens = zoom.auth().authorizeUser(authCode).getOrThrow()
+// Authorize the user with the auth code
+// The result is a pair of access and refresh tokens
+val userTokens = call { auth.authorizeUser("code-sent-by-zoom") }
 
 // Create an instance of Meetings SDK
-val meetingsSDK = zoom.meetings(userTokens)
-
-// Use the SDK, for example you can list scheduled meetings of the user
-val meetings = meetingsSDK.listScheduled("your-zoom-user-id").getOrThrow()
+val meetingSDK = zoom.meetings(userTokens)
 ```
 
 ## Installation
