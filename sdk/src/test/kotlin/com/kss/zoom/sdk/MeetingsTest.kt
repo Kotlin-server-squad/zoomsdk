@@ -1,15 +1,16 @@
 package com.kss.zoom.sdk
 
-import com.kss.zoom.sdk.WebhookVerifier.Companion.DEFAULT_SIGNATURE_HEADER_NAME
-import com.kss.zoom.sdk.WebhookVerifier.Companion.DEFAULT_TIMESTAMP_HEADER_NAME
-import com.kss.zoom.sdk.model.api.PaginationObject
-import com.kss.zoom.sdk.model.api.meetings.MeetingResponse
-import com.kss.zoom.sdk.model.api.meetings.toDomain
-import com.kss.zoom.sdk.model.api.toDomain
-import com.kss.zoom.sdk.utils.*
-import com.kss.zoom.sdk.utils.WebhookTestUtils.TIMESTAMP
-import com.kss.zoom.sdk.utils.WebhookTestUtils.validSignature
-import com.kss.zoom.utils.call
+import com.kss.zoom.sdk.common.call
+import com.kss.zoom.sdk.webhooks.WebhookVerifier.Companion.DEFAULT_SIGNATURE_HEADER_NAME
+import com.kss.zoom.sdk.webhooks.WebhookVerifier.Companion.DEFAULT_TIMESTAMP_HEADER_NAME
+import com.kss.zoom.sdk.meetings.IMeetings
+import com.kss.zoom.sdk.common.model.api.PaginationObject
+import com.kss.zoom.sdk.meetings.model.api.MeetingResponse
+import com.kss.zoom.sdk.meetings.model.api.toDomain
+import com.kss.zoom.sdk.common.model.api.toDomain
+import com.kss.zoom.test.events.*
+import com.kss.zoom.test.utils.WebhookTestUtils.TIMESTAMP
+import com.kss.zoom.test.utils.WebhookTestUtils.validSignature
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -25,9 +26,9 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 
-class MeetingsTest : ModuleTest<Meetings>() {
-    override fun module(): Meetings = meetings()
-    override suspend fun sdkCall(module: Meetings): Any =
+class MeetingsTest : ModuleTest<IMeetings>() {
+    override fun module(): IMeetings = meetings()
+    override suspend fun sdkCall(module: IMeetings): Any =
         module.listScheduled(USER_ID)
 
     private val json = Json {
@@ -215,7 +216,7 @@ class MeetingsTest : ModuleTest<Meetings>() {
         }
     }
 
-    private fun meetings(responseBody: String? = null): Meetings =
+    private fun meetings(responseBody: String? = null): IMeetings =
         module(responseBody) { zoom, tokens ->
             zoom.meetings(tokens)
         }

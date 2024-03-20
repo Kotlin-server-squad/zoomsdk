@@ -1,8 +1,8 @@
 package com.kss.zoom.demo.webhooks.spring
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.kss.zoom.sdk.Meetings
-import com.kss.zoom.utils.callAsync
+import com.kss.zoom.sdk.common.callAsync
+import com.kss.zoom.sdk.meetings.IMeetings
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.RequestHeader
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/webhooks")
 class WebhookController(
     private val webSocketHandler: WebSocketHandler,
-    private val meetings: Meetings,
+    private val meetings: IMeetings,
     private val objectMapper: ObjectMapper
 ) {
 
@@ -27,7 +27,9 @@ class WebhookController(
     ) {
         val payload = request.reader.readText()
         callAsync {
-            meetings.onMeetingCreated(payload, timestamp, signature) { notifyClients(it) }
+            meetings.onMeetingCreated(payload, timestamp, signature) {
+                notifyClients(it)
+            }
         }
         logger.info("Responding OK to meetings webhook")
     }

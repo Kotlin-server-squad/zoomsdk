@@ -1,29 +1,29 @@
 package com.kss.zoom
 
 import com.kss.zoom.auth.Authorization
-import com.kss.zoom.auth.AuthorizationImpl
-import com.kss.zoom.auth.UserTokens
+import com.kss.zoom.auth.IAuthorization
 import com.kss.zoom.auth.config.AuthorizationConfig
-import com.kss.zoom.sdk.Meetings
-import com.kss.zoom.sdk.MeetingsImpl
-import com.kss.zoom.sdk.Users
-import com.kss.zoom.sdk.UsersImpl
-import com.kss.zoom.sdk.WebhookVerifier
+import com.kss.zoom.auth.model.UserTokens
+import com.kss.zoom.sdk.meetings.IMeetings
+import com.kss.zoom.sdk.meetings.Meetings
+import com.kss.zoom.sdk.users.IUsers
+import com.kss.zoom.sdk.users.Users
+import com.kss.zoom.sdk.webhooks.WebhookVerifier
 import io.ktor.client.*
 
 class Zoom private constructor(
-    private val authorization: Authorization,
+    private val authorization: IAuthorization,
     private val httpClient: HttpClient? = null,
     private val webhookVerifier: WebhookVerifier? = null
 ) {
 
-    fun auth(): Authorization = authorization
+    fun auth(): IAuthorization = authorization
 
-    fun meetings(tokens: UserTokens? = null): Meetings =
-        MeetingsImpl.create(tokens, httpClient, webhookVerifier)
+    fun meetings(tokens: UserTokens? = null): IMeetings =
+        Meetings.create(tokens, httpClient, webhookVerifier)
 
-    fun users(tokens: UserTokens? = null): Users =
-        UsersImpl.create(tokens, httpClient)
+    fun users(tokens: UserTokens? = null): IUsers =
+        Users.create(tokens, httpClient)
 
     companion object {
         fun create(
@@ -32,7 +32,7 @@ class Zoom private constructor(
             verificationToken: String? = null,
             httpClient: HttpClient? = null
         ): Zoom {
-            val authorization = AuthorizationImpl.create(
+            val authorization = Authorization.create(
                 AuthorizationConfig.create(clientId, clientSecret), httpClient
             )
             val webhookVerifier = verificationToken?.let { WebhookVerifier.create(it) }

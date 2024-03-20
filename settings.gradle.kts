@@ -3,7 +3,6 @@ plugins {
 }
 rootProject.name = "zoom-sdk"
 
-include(":common")
 include(":sdk")
 
 // Examples

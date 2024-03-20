@@ -1,8 +1,8 @@
 package com.kss.zoom
 
-import com.kss.zoom.auth.Authorization
-import com.kss.zoom.auth.AuthorizationCode
-import com.kss.zoom.auth.UserTokens
+import com.kss.zoom.auth.IAuthorization
+import com.kss.zoom.auth.model.AuthorizationCode
+import com.kss.zoom.auth.model.UserTokens
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -129,6 +129,6 @@ class ZoomTest {
         zoom.meetings(tokens)
     }
 
-    private suspend fun tokens(auth: Authorization): UserTokens =
+    private suspend fun tokens(auth: IAuthorization): UserTokens =
         auth.authorizeUser(AuthorizationCode(AUTHORIZATION_CODE)).getOrThrow()
 }

@@ -1,6 +1,6 @@
 package com.kss.zoom.demo.webhooks.ktor.plugins
 
-import com.kss.zoom.sdk.Meetings
+import com.kss.zoom.sdk.meetings.IMeetings
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -11,7 +11,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 
-fun Application.configureRouting(meetings: Meetings) {
+fun Application.configureRouting(meetings: IMeetings) {
     val logger = LoggerFactory.getLogger("Routing")
 
     routing {

@@ -1,8 +1,8 @@
 package com.kss.zoom.sdk
 
-import com.kss.zoom.sdk.utils.WebhookTestUtils.applicationCall
-import com.kss.zoom.sdk.utils.WebhookTestUtils.validSignature
-import com.kss.zoom.sdk.utils.WebhookTestUtils.verifier
+import com.kss.zoom.test.utils.WebhookTestUtils.applicationCall
+import com.kss.zoom.test.utils.WebhookTestUtils.validSignature
+import com.kss.zoom.test.utils.WebhookTestUtils.verifier
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue

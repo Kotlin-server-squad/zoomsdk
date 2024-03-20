@@ -6,7 +6,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":common"))
     implementation(project(":sdk"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")

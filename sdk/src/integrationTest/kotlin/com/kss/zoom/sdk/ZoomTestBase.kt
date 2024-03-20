@@ -1,9 +1,11 @@
 package com.kss.zoom.sdk
 
 import com.kss.zoom.Zoom
-import com.kss.zoom.auth.AccountId
-import com.kss.zoom.auth.UserTokens
-import com.kss.zoom.utils.callSync
+import com.kss.zoom.auth.model.AccountId
+import com.kss.zoom.auth.model.UserTokens
+import com.kss.zoom.sdk.common.callSync
+import com.kss.zoom.sdk.meetings.IMeetings
+import com.kss.zoom.sdk.users.IUsers
 
 abstract class ZoomTestBase {
     companion object {
@@ -20,10 +22,10 @@ abstract class ZoomTestBase {
 
     private val userTokens = userTokens()
 
-    fun meetings(): Meetings =
+    fun meetings(): IMeetings =
         zoom.meetings(userTokens)
 
-    fun users(): Users =
+    fun users(): IUsers =
         zoom.users(userTokens)
 
     private fun userTokens(): UserTokens {

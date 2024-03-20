@@ -1,10 +1,11 @@
 package com.kss.zoom.sdk
 
 import com.kss.zoom.Zoom
-import com.kss.zoom.auth.AccessToken
-import com.kss.zoom.auth.RefreshToken
-import com.kss.zoom.auth.UserTokens
-import com.kss.zoom.sdk.model.api.meetings.ScheduledMeetingResponse
+import com.kss.zoom.auth.model.AccessToken
+import com.kss.zoom.auth.model.RefreshToken
+import com.kss.zoom.auth.model.UserTokens
+import com.kss.zoom.sdk.common.withCorrelationId
+import com.kss.zoom.sdk.meetings.model.api.ScheduledMeetingResponse
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -26,7 +27,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.*
 
-abstract class ModuleTest<M : ZoomModule> {
+abstract class ModuleTest<M : IZoomModule> {
 
     val objectMapper = Json {
         ignoreUnknownKeys = true
@@ -44,7 +45,7 @@ abstract class ModuleTest<M : ZoomModule> {
 
     abstract fun module(): M
 
-    fun <M : ZoomModule> module(responseBody: String? = null, block: (Zoom, UserTokens) -> M): M {
+    fun <M : IZoomModule> module(responseBody: String? = null, block: (Zoom, UserTokens) -> M): M {
         val zoom = Zoom.create(
             clientId = "clientId",
             clientSecret = "clientSecret",
