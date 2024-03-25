@@ -1,19 +1,42 @@
 package com.kss.zoom.sdk
 
-import com.kss.zoom.sdk.model.MeetingResponse
-import com.kss.zoom.sdk.model.PaginationObject
-import com.kss.zoom.sdk.model.toModel
-import com.kss.zoom.utils.call
+import com.kss.zoom.sdk.common.call
+import com.kss.zoom.sdk.webhooks.WebhookVerifier.Companion.DEFAULT_SIGNATURE_HEADER_NAME
+import com.kss.zoom.sdk.webhooks.WebhookVerifier.Companion.DEFAULT_TIMESTAMP_HEADER_NAME
+import com.kss.zoom.sdk.meetings.IMeetings
+import com.kss.zoom.sdk.common.model.api.PaginationObject
+import com.kss.zoom.sdk.meetings.model.api.MeetingResponse
+import com.kss.zoom.sdk.meetings.model.api.toDomain
+import com.kss.zoom.sdk.common.model.api.toDomain
+import com.kss.zoom.test.events.*
+import com.kss.zoom.test.utils.WebhookTestUtils.TIMESTAMP
+import com.kss.zoom.test.utils.WebhookTestUtils.validSignature
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.routing.*
+import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 
-class MeetingsTest : ModuleTest<Meetings>() {
-    override fun module(): Meetings = meetings()
-    override suspend fun sdkCall(module: Meetings): Any =
+class MeetingsTest : ModuleTest<IMeetings>() {
+    override fun module(): IMeetings = meetings()
+    override suspend fun sdkCall(module: IMeetings): Any =
         module.listScheduled(USER_ID)
+
+    private val json = Json {
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
+
+    private val defaultMeetings = meetings()
 
     @Test
     fun `should create meeting`() = runBlocking {
@@ -47,7 +70,7 @@ class MeetingsTest : ModuleTest<Meetings>() {
                 timezone = CLIENT_TIMEZONE
             )
         }
-        val expectedMeeting = parseJson(jsonResponse, MeetingResponse::class).toModel()
+        val expectedMeeting = parseJson<MeetingResponse>(jsonResponse).toDomain()
         assertEquals(expectedMeeting, meeting, "Unexpected meeting")
     }
 
@@ -75,7 +98,7 @@ class MeetingsTest : ModuleTest<Meetings>() {
             }
         """.trimIndent()
         val meeting = call { meetings(jsonResponse).get(78723497365) }
-        val expectedMeeting = parseJson(jsonResponse, MeetingResponse::class).toModel()
+        val expectedMeeting = parseJson<MeetingResponse>(jsonResponse).toDomain()
         assertEquals(expectedMeeting, meeting, "Unexpected meeting")
     }
 
@@ -138,14 +161,88 @@ class MeetingsTest : ModuleTest<Meetings>() {
               ]
             }
         """.trimIndent()
-        val expectedPage = parseJson(jsonResponse, PaginationObject::class).toModel()
+        val expectedPage = parseJson<PaginationObject>(
+            jsonResponse,
+        ).toDomain()
         val page = call { meetings(jsonResponse).listScheduled(USER_ID) }
         assertEquals(expectedPage, page, "Unexpected page")
     }
 
-    private fun meetings(responseBody: String? = null): Meetings =
+    @Test
+    fun `should handle meeting_created webhook`() = runBlocking {
+        verifyWebhookHandler(MEETING_CREATED_TEST_EVENT, defaultMeetings::onMeetingCreated)
+    }
+
+    @Test
+    fun `should handle meeting_started webhook`() = runBlocking {
+        verifyWebhookHandler(MEETING_STARTED_TEST_EVENT, defaultMeetings::onMeetingStarted)
+    }
+
+    @Test
+    fun `should handle meeting_ended webhook`() = runBlocking {
+        verifyWebhookHandler(MEETING_ENDED_TEST_EVENT, defaultMeetings::onMeetingEnded)
+    }
+
+    @Test
+    fun `should handle meeting_participant_joined webhook`() = runBlocking {
+        verifyWebhookHandler(MEETING_PARTICIPANT_JOINED_TEST_EVENT, defaultMeetings::onMeetingParticipantJoined)
+    }
+
+    @Test
+    fun `should handle meeting_participant_left webhook`() = runBlocking {
+        verifyWebhookHandler(MEETING_PARTICIPANT_LEFT_TEST_EVENT, defaultMeetings::onMeetingParticipantLeft)
+    }
+
+    @Test
+    fun `should ignore irrelevant webhook event`() = runBlocking {
+        onWebhookRequest(MEETING_ENDED_TEST_EVENT) { call ->
+            val result = defaultMeetings.onMeetingStarted(call) { event ->
+                fail("Unexpected event: $event")
+            }
+            assertTrue(result.isSuccess, "Event should have been ignored")
+        }
+    }
+
+    private suspend inline fun <reified T> verifyWebhookHandler(
+        payload: String,
+        crossinline action: suspend (ApplicationCall, (T) -> Unit) -> Result<Unit>
+    ) {
+        onWebhookRequest(payload) { call ->
+            val result = action(call) { event ->
+                val expectedEvent = json.decodeFromString<T>(payload)
+                assertEquals(expectedEvent, event, "Unexpected event")
+            }
+            assertTrue(result.isSuccess, "Unexpected result")
+        }
+    }
+
+    private fun meetings(responseBody: String? = null): IMeetings =
         module(responseBody) { zoom, tokens ->
             zoom.meetings(tokens)
         }
 
+    private suspend fun onWebhookRequest(payload: String, action: suspend (ApplicationCall) -> Unit) {
+        testApplication {
+            val client = createClient {
+                install(ContentNegotiation) {
+                    json(
+                        json = Json {
+                            ignoreUnknownKeys = true
+                        }
+                    )
+                }
+            }
+            routing {
+                post("/webhook") {
+                    action(call)
+                }
+            }
+            client.post("/webhook") {
+                contentType(ContentType.Application.Json)
+                setBody(payload)
+                header(DEFAULT_SIGNATURE_HEADER_NAME, validSignature(payload))
+                header(DEFAULT_TIMESTAMP_HEADER_NAME, TIMESTAMP.toString())
+            }
+        }
+    }
 }

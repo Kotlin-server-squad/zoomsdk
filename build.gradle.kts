@@ -11,7 +11,8 @@ plugins {
     id("io.ktor.plugin") version "2.3.8" apply false
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22" apply false
     id("org.openapi.generator") version "6.6.0" apply false
-kotlin("jvm") version "1.9.22"
+    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    kotlin("jvm") version "1.9.22"
 }
 
 group = "com.kotlinserversquad"
@@ -46,6 +47,7 @@ subprojects {
         "testImplementation"("io.ktor:ktor-client-mock:$ktor_version")
         "testImplementation"(kotlin("test", kotlin_version))
         "testImplementation"(kotlin("test-junit5", kotlin_version))
+        "testImplementation"("io.mockk:mockk:1.12.0")
         "testImplementation"("org.junit.jupiter:junit-jupiter:$junit_jupiter_version")
         "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
     }
@@ -70,8 +72,11 @@ subprojects {
 }
 
 dependencies {
-implementation(kotlin("stdlib-jdk8"))}
+    implementation(kotlin("stdlib-jdk8"))
+}
 repositories {
-mavenCentral()}
+    mavenCentral()
+}
 kotlin {
-jvmToolchain(8)}
+    jvmToolchain(8)
+}

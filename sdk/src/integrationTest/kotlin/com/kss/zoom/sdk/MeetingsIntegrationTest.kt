@@ -1,10 +1,11 @@
 package com.kss.zoom.sdk
 
-import com.kss.zoom.Page
-import com.kss.zoom.PagedQuery
-import com.kss.zoom.sdk.model.Meeting
-import com.kss.zoom.sdk.model.ScheduledMeeting
-import com.kss.zoom.utils.call
+import com.kss.zoom.sdk.meetings.model.Meeting
+import com.kss.zoom.sdk.meetings.model.ScheduledMeeting
+import com.kss.zoom.sdk.common.call
+import com.kss.zoom.sdk.common.model.Page
+import com.kss.zoom.sdk.common.model.PagedQuery
+import com.kss.zoom.sdk.meetings.IMeetings
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -19,7 +20,7 @@ import kotlin.test.assertTrue
 
 class MeetingsIntegrationTest : ZoomTestBase() {
 
-    private lateinit var meetings: Meetings
+    private lateinit var meetings: IMeetings
 
     @BeforeEach
     fun setUp() {
