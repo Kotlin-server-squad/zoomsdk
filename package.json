@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "zoomsdk": "file:build/js"
+  }
+}
