@@ -24,9 +24,7 @@ jobs:
         include:
           - target: jvmTest
             os: ubuntu-latest
-          - target: testDebugUnitTest
-            os: ubuntu-latest
-          - target: testReleaseUnitTest
+          - target: jsTest
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
 
