@@ -127,6 +127,7 @@ kotlin {
             .setFrom(files("${buildDir}/jacoco/jvmTest.exec"))
 
         reports {
+            csv.required = true
             xml.required = true
             html.required = true
         }
