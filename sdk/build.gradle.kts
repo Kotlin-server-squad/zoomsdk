@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     id("module.publication")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("jacoco")
+}
+
+jacoco {
+    toolVersion = "0.8.7" // Specify the desired JaCoCo version
+    reportsDirectory = file("$buildDir/reports/jacoco")
 }
 
 kotlin {
@@ -101,6 +107,28 @@ kotlin {
             dependencies {
                 // JS specific test dependencies
             }
+        }
+    }
+    tasks.register("jacocoTestReport", JacocoReport::class) {
+        dependsOn("jvmTest")
+        val coverageSourceDirs = arrayOf(
+            "src/commonMain",
+            "src/jvmMain"
+        )
+
+        val classFiles = File("${buildDir}/classes/kotlin/jvm/")
+            .walkBottomUp()
+            .toSet()
+
+        classDirectories.setFrom(classFiles)
+        sourceDirectories.setFrom(files(coverageSourceDirs))
+
+        executionData
+            .setFrom(files("${buildDir}/jacoco/jvmTest.exec"))
+
+        reports {
+            xml.required = true
+            html.required = true
         }
     }
 }
