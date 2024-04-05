@@ -1,5 +1,6 @@
 # Zoom SDK
-
+[![Java CI with Gradle](https://github.com/Kotlin-server-squad/zoomsdk/actions/workflows/gradle.yml/badge.svg)](https://github.com/Kotlin-server-squad/zoomsdk/actions/workflows/gradle.yml)
+![Coverage](.github/badges/jacoco.svg)
 ## Overview
 This is a Kotlin SDK for the [Zoom API](https://marketplace.zoom.us/docs/api-reference/introduction).
 The SDK provides more than just a simple way to make API calls to Zoom.
