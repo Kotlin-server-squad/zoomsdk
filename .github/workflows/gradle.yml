@@ -6,6 +6,11 @@ name: Build with Gradle
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "LICENSE"
+      - ".github/badges/**"
   pull_request:
     branches: [ "main" ]
   workflow_call:
