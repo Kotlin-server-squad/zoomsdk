@@ -18,9 +18,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: jvmTest
-            os: ubuntu-latest
-          - target: jsTest
+          - target: build
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
 
