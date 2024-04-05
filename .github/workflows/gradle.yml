@@ -28,6 +28,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         ref: ${{ github.head_ref }}
+        token: ${{ secrets.COMMIT_KEY }}
     - name: Validate Gradle Wrapper
       uses: gradle/wrapper-validation-action@v1
     - uses: actions/cache@v3
