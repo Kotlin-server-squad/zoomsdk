@@ -1,16 +1,30 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     id("module.publication")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("jacoco")
+    jacoco
 }
 
 jacoco {
-    toolVersion = "0.8.7" // Specify the desired JaCoCo version
-    reportsDirectory = file("$buildDir/reports/jacoco")
+    toolVersion = "0.8.12" // Specify the desired JaCoCo version
+    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
 
+val nativeTarget = when (val hostOs = System.getProperty("os.name")) {
+    "Mac OS X" -> "MacosX64"
+    "Linux" -> "LinuxX64"
+    else -> throw GradleException("Host $hostOs is not supported in Kotlin/Native.")
+}
+
+fun KotlinNativeTargetWithHostTests.configureTarget() =
+    binaries { executable { entryPoint = "com.kss.zoom.main" } }
+
 kotlin {
+    macosX64 { configureTarget() }
+    linuxX64 { configureTarget() }
+
     jvm {
         compilations.all {
             kotlinOptions {
@@ -91,7 +105,33 @@ kotlin {
                 testLogging {
                     events("passed", "skipped", "failed")
                 }
+                finalizedBy(tasks.withType(JacocoReport::class))
             }
+        }
+        val nativeMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation("io.ktor:ktor-client-cio:$ktorVersion")
+                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+            }
+        }
+        val nativeTest by creating {
+            dependsOn(commonTest)
+        }
+        val posixMain by creating {
+            dependsOn(nativeMain)
+        }
+        val posixTest by creating {
+            dependsOn(nativeTest)
+        }
+        arrayOf("macosX64", "linuxX64").forEach { targetName ->
+            getByName("${targetName}Main").dependsOn(posixMain)
+            getByName("${targetName}Test").dependsOn(posixTest)
+        }
+        arrayOf("macosX64", "linuxX64").forEach { targetName ->
+            getByName("${targetName}Main").dependsOn(nativeMain)
+            getByName("${targetName}Test").dependsOn(nativeTest)
         }
         val jsMain by getting {
             dependencies {
@@ -108,27 +148,30 @@ kotlin {
                 // JS specific test dependencies
             }
         }
-    }
-    tasks.register("jacocoTestReport", JacocoReport::class) {
-        dependsOn("jvmTest")
-        val coverageSourceDirs = arrayOf(
-            "src/commonMain",
-            "src/jvmMain"
-        )
+        tasks.register("jacocoTestReport", JacocoReport::class) {
+            dependsOn(tasks.withType(Test::class))
+            val coverageSourceDirs = arrayOf(
+                "src/commonMain",
+                "src/jvmMain"
+            )
 
-        val classFiles = File("${buildDir}/classes/kotlin/jvm/")
-            .walkBottomUp()
-            .toSet()
+            val buildDirectory = layout.buildDirectory
 
-        classDirectories.setFrom(classFiles)
-        sourceDirectories.setFrom(files(coverageSourceDirs))
+            val classFiles = buildDirectory.dir("classes/kotlin/jvm").get().asFile
+                .walkBottomUp()
+                .toSet()
 
-        executionData
-            .setFrom(files("${buildDir}/jacoco/jvmTest.exec"))
+            classDirectories.setFrom(classFiles)
+            sourceDirectories.setFrom(files(coverageSourceDirs))
 
-        reports {
-            xml.required = true
-            html.required = true
+            buildDirectory.files("jacoco/jvmTest.exec").let {
+                executionData.setFrom(it)
+            }
+
+            reports {
+                xml.required = true
+                html.required = true
+            }
         }
     }
 }
