@@ -64,7 +64,7 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
-
+                implementation("io.ktor:ktor-client-cio:$ktorVersion")
             }
         }
         val jvmTest by getting {
@@ -75,7 +75,7 @@ kotlin {
         val nativeMain by creating {
             dependsOn(commonMain)
             dependencies {
-
+                implementation("io.ktor:ktor-client-curl:$ktorVersion")
             }
         }
         val nativeTest by creating {
