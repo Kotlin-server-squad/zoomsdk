@@ -8,20 +8,34 @@ import com.kss.zoom.cli.subcommands.*
 import com.kss.zoom.sdk.common.call
 import io.ktor.client.*
 import io.ktor.client.engine.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 fun runZoomCli() {
     val clientId = getSystemProperty("ZOOM_CLIENT_ID") ?: error("ZOOM_CLIENT_ID is not set")
     val clientSecret = getSystemProperty("ZOOM_CLIENT_SECRET") ?: error("ZOOM_CLIENT_SECRET is not set")
     val zoom = Zoom.create(
         clientId, clientSecret,
-        httpClient = HttpClient(httpClientEngineFactory())
+        httpClient = HttpClient(httpClientEngineFactory()) {
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                })
+            }
+            install(Logging) {
+                logger = Logger.DEFAULT
+                level = LogLevel.NONE
+            }
+        }
     )
     val listMeetingsCommand = ListMeetingsCommand(zoom)
     val server = startServer(zoom, listMeetingsCommand)
