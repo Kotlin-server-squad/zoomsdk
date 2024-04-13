@@ -2,6 +2,7 @@ package com.kss.zoom.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.mordant.terminal.Terminal
 import com.kss.zoom.Zoom
 import com.kss.zoom.auth.model.AuthorizationCode
 import com.kss.zoom.cli.subcommands.*
@@ -19,6 +20,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+
+private val terminal = Terminal()
 
 fun runZoomCli() {
     val clientId = getSystemProperty("ZOOM_CLIENT_ID") ?: error("ZOOM_CLIENT_ID is not set")
@@ -39,12 +42,19 @@ fun runZoomCli() {
     )
     val listMeetingsCommand = ListMeetingsCommand(zoom)
     val server = startServer(zoom, listMeetingsCommand)
+    server.addShutdownHook {
+        server.gracefulStop()
+    }
     try {
         runShell(listMeetingsCommand, LoginCommand(zoom))
     } finally {
-        server.stop(1000, 10000)
-        println("Server stopped, exiting...")
+        server.gracefulStop()
     }
+}
+
+private fun ApplicationEngine.gracefulStop() {
+    this.stop(1000, 10000)
+    terminal.println("Server stopped, exiting...")
 }
 
 private fun startServer(zoom: Zoom, vararg authCommands: AuthCommand) = embeddedServer(CIO, port = 8080) {
@@ -57,7 +67,7 @@ private fun startServer(zoom: Zoom, vararg authCommands: AuthCommand) = embedded
                         val tokens = call { zoom.auth().authorizeUser(AuthorizationCode(code)) }
                         authCommands.forEach { it.setUserTokens(tokens) }
                     } catch (e: Exception) {
-                        println("Error handling callback: $e")
+                        terminal.println("Error handling callback: ${e.message ?: "unknown error"}", stderr = true)
                     }
                 }
             }
