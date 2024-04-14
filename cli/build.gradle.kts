@@ -1,5 +1,8 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 plugins {
     application
@@ -118,25 +121,6 @@ kotlin {
             jvmTarget.compilations.getByName("main").runtimeDependencyFiles
         )
     }
-    tasks.register<Copy>("install") {
-        group = "run"
-        description = "Build the native executable and install it"
-        val destDir = "/usr/local/bin"
-
-        dependsOn("runDebugExecutable$nativeTarget")
-        println("Installing $program to $destDir")
-        val targetLowercase = nativeTarget.first().lowercaseChar() + nativeTarget.substring(1)
-        val folder = "cli/build/bin/$targetLowercase/debugExecutable"
-        println("$ cp $folder/cli.kexe $destDir/$program")
-        from(folder) {
-            include("cli.kexe")
-            rename { program }
-        }
-        into(destDir)
-        doLast {
-            println("$ cp $folder/cli.kexe $destDir/$program")
-        }
-    }
     tasks.register("allRun") {
         group = "run"
         description = "Run $program on the JVM, on Node and natively"
@@ -152,32 +136,66 @@ interface Injected {
     val fs: FileSystemOperations
 }
 
-tasks.register("completions") {
-    group = "run"
-    description = "Generate Bash/Zsh/Fish completion files"
-    dependsOn(":install")
-    val injected = project.objects.newInstance<Injected>()
-    val shells = listOf(
-        Triple("bash", file("completions/$program.bash"), "/usr/local/etc/bash_completion.d"),
-        Triple("zsh", file("completions/_$program.zsh"), "/usr/local/share/zsh/site-functions"),
-        Triple("fish", file("completions/$program.fish"), "/usr/local/share/fish/vendor_completions.d"),
-    )
-    for ((SHELL, FILE, INSTALL) in shells) {
-        actions.add {
-            println("Updating   $SHELL completion file at $FILE")
-            injected.exec.exec {
-                commandLine(program, "--generate-completion", SHELL)
-                standardOutput = FILE.outputStream()
-            }
-            println("Installing $SHELL completion into $INSTALL")
-            injected.fs.copy {
-                from(FILE)
-                into(INSTALL)
-            }
+abstract class InstallTask : DefaultTask() {
+    @get:Input
+    abstract val userHome: Property<String>
+
+    @get:Input
+    abstract val programName: Property<String>
+
+    @get:Input
+    abstract val sourceBinaryPath: Property<String>
+
+    @get:Input
+    abstract val targetBinaryPath: Property<String>
+
+    @TaskAction
+    fun performTask() {
+        val programDir = Paths.get(userHome.get(), ".${programName.get()}")
+
+        // Check if the directory exists. If not, create it.
+        if (Files.notExists(programDir)) {
+            Files.createDirectories(programDir)
+            println("Created directory at $programDir")
+        }
+        val destinationBinaryPath = programDir.resolve(programName.get()).toString()
+
+        // Copy the binary
+        println("Copying ${sourceBinaryPath.get()} to $destinationBinaryPath")
+        Files.copy(Paths.get(sourceBinaryPath.get()), File(destinationBinaryPath).toPath(), REPLACE_EXISTING)
+
+        // Finish by checking if the binary is in the PATH
+        val isPresentInPath = System.getenv("PATH")?.contains(programDir.toString()) ?: false
+        if (isPresentInPath) {
+            println("Congrats! You've successfully installed Zoom CLI. Run '${programName.get()}' to get started.")
+        } else {
+            val exportPath = "export PATH=$programDir:\$PATH"
+            println(
+                """
+                        |Installation is almost complete. To finish, add ~/.zoomcli to your PATH environment variable.
+                        |
+                        |For Bash, add the following line to your ~/.bashrc or ~/.bash_profile:
+                        |$exportPath
+                        |
+                        |For Zsh, add the following line to your ~/.zshrc:
+                        |$exportPath
+                        |
+                        |Then, reload your shell configuration or restart your terminal.
+                    """.trimMargin()
+            )
         }
     }
-    doLast {
-        println("On macOS, follow the following instructions to configure shell completions")
-        println("👀 https://docs.brew.sh/Shell-Completion 👀")
-    }
+}
+
+tasks.register<InstallTask>("install") {
+    programName.set(program)
+    userHome.set(System.getProperty("user.home"))
+    sourceBinaryPath.set(
+        Paths.get(
+            projectDir.path, "build", "bin",
+            nativeTarget.first().lowercaseChar() + nativeTarget.substring(1),
+            "debugExecutable", "cli.kexe"
+        ).toAbsolutePath().toString()
+    )
+    targetBinaryPath.set(Paths.get(userHome.get(), ".zoomcli", "zoomcli").toString())
 }
