@@ -25,7 +25,7 @@ application {
 
 val nativeTarget = when (val hostOs = System.getProperty("os.name")) {
     "Mac OS X" -> "MacosX64"
-//    "Linux" -> "LinuxX64"
+    "Linux" -> "LinuxX64"
     else -> throw GradleException("Host $hostOs is not supported in Kotlin/Native.")
 }
 
