@@ -10,7 +10,6 @@ plugins {
 jacoco {
     toolVersion = "0.8.12" // Specify the desired JaCoCo version
     reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
-    id("jacoco")
 }
 
 jacoco {
