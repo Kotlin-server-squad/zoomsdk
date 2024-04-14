@@ -15,11 +15,13 @@ The SDK is built using Kotlin Multiplatform, which allows it to run on multiple 
 Currently, the SDK supports the following platforms:
 * JVM (Kotlin/Java)
 * JavaScript (Node.js, Browser)
+* Native via [Zoom CLI](./cli/README.md)
 
 ## How to Use It?
 See the platform-specific guides for detailed instructions on how to use the SDK.
 * [JVM](doc/usage-jvm.md)
-* [JavaScript](doc/usage-js.md)
+* [JavaScript](doc/usage-js.md))
+* [Native](./cli/README.md)
 
 ## Installation
 The SDK will be available on Maven Central. Stay tuned for the release announcement.
