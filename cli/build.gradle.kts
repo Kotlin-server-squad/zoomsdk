@@ -25,7 +25,7 @@ application {
 
 val nativeTarget = when (val hostOs = System.getProperty("os.name")) {
     "Mac OS X" -> "MacosX64"
-    "Linux" -> "LinuxX64"
+//    "Linux" -> "LinuxX64"
     else -> throw GradleException("Host $hostOs is not supported in Kotlin/Native.")
 }
 
@@ -34,7 +34,10 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
 
 kotlin {
     macosX64 { configureTarget() }
-    linuxX64 { configureTarget() }
+
+    // Uncomment the following block to add support for Linux
+    // Currently blocked by an issue with curl: https://youtrack.jetbrains.com/issue/KTOR-6361
+//    linuxX64 { configureTarget() }
 
     val jvmTarget = jvm()
 
@@ -91,11 +94,11 @@ kotlin {
         val posixTest by creating {
             dependsOn(nativeTest)
         }
-        arrayOf("macosX64", "linuxX64").forEach { targetName ->
+        arrayOf("macosX64" /*,"linuxX64"*/).forEach { targetName ->
             getByName("${targetName}Main").dependsOn(posixMain)
             getByName("${targetName}Test").dependsOn(posixTest)
         }
-        arrayOf("macosX64", "linuxX64").forEach { targetName ->
+        arrayOf("macosX64"/*,"linuxX64"*/).forEach { targetName ->
             getByName("${targetName}Main").dependsOn(nativeMain)
             getByName("${targetName}Test").dependsOn(nativeTest)
         }
