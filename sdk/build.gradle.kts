@@ -12,11 +12,6 @@ jacoco {
     reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
 
-jacoco {
-    toolVersion = "0.8.7" // Specify the desired JaCoCo version
-    reportsDirectory = file("$buildDir/reports/jacoco")
-}
-
 val nativeTarget = when (val hostOs = System.getProperty("os.name")) {
     "Mac OS X" -> "MacosX64"
     "Linux" -> "LinuxX64"
@@ -151,31 +146,6 @@ kotlin {
         val jsTest by getting {
             dependencies {
                 // JS specific test dependencies
-            }
-        }
-        tasks.register("jacocoTestReport", JacocoReport::class) {
-            dependsOn(tasks.withType(Test::class))
-            val coverageSourceDirs = arrayOf(
-                "src/commonMain",
-                "src/jvmMain"
-            )
-
-            val buildDirectory = layout.buildDirectory
-
-            val classFiles = buildDirectory.dir("classes/kotlin/jvm").get().asFile
-                .walkBottomUp()
-                .toSet()
-
-            classDirectories.setFrom(classFiles)
-            sourceDirectories.setFrom(files(coverageSourceDirs))
-
-            buildDirectory.files("jacoco/jvmTest.exec").let {
-                executionData.setFrom(it)
-            }
-
-            reports {
-                xml.required = true
-                html.required = true
             }
         }
     }
