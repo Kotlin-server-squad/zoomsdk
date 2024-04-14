@@ -169,23 +169,36 @@ abstract class InstallTask : DefaultTask() {
 
         // Finish by checking if the binary is in the PATH
         val isPresentInPath = System.getenv("PATH")?.contains(programDir.toString()) ?: false
+        val exportZoomCredentials = """
+              Don't forget to set your Zoom client ID and secret:
+              
+              For Bash, add the following line to your ~/.bashrc or ~/.bash_profile:
+              export ZOOM_CLIENT_ID=your-zoom-client-id
+              export ZOOM_CLIENT_SECRET=your-zoom-client-secret
+              
+              For Zsh, add the following line to your ~/.zshrc:
+              export ZOOM_CLIENT_ID=your-zoom-client-id
+              export ZOOM_CLIENT_SECRET=your-zoom-client-secret            
+        """.trimIndent()
         if (isPresentInPath) {
             println("Congrats! You've successfully installed Zoom CLI. Run '${programName.get()}' to get started.")
+            println(exportZoomCredentials)
         } else {
             val exportPath = "export PATH=$programDir:\$PATH"
             println(
                 """
-                        |Installation is almost complete. To finish, add ~/.zoomcli to your PATH environment variable.
-                        |
-                        |For Bash, add the following line to your ~/.bashrc or ~/.bash_profile:
-                        |$exportPath
-                        |
-                        |For Zsh, add the following line to your ~/.zshrc:
-                        |$exportPath
-                        |
-                        |Then, reload your shell configuration or restart your terminal.
-                    """.trimMargin()
+                   Installation is almost complete. To finish, add ~/.zoomcli to your PATH environment variable.
+                   
+                   For Bash, add the following line to your ~/.bashrc or ~/.bash_profile:
+                   $exportPath
+                   
+                   For Zsh, add the following line to your ~/.zshrc:
+                   $exportPath
+                   
+                   Then, reload your shell configuration or restart your terminal.
+                """.trimMargin()
             )
+            println(exportZoomCredentials)
         }
     }
 }
