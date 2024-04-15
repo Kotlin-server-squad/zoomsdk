@@ -9,10 +9,15 @@ import com.kss.zoom.sdk.users.IUsers
 
 abstract class ZoomTestBase {
     companion object {
-        private val CLIENT_ID: String = System.getenv("CLIENT_ID")
-        private val CLIENT_SECRET: String = System.getenv("CLIENT_SECRET")
-        private val ACCOUNT_ID: String = System.getenv("ACCOUNT_ID")
-        val USER_ID: String = System.getenv("USER_ID")
+//        private val CLIENT_ID: String = System.getenv("CLIENT_ID")
+//        private val CLIENT_SECRET: String = System.getenv("CLIENT_SECRET")
+//        private val ACCOUNT_ID: String = System.getenv("ACCOUNT_ID")
+//        val USER_ID: String = System.getenv("USER_ID")
+
+        private val CLIENT_ID: String = "tTlJEmJ2TbCVhEojKrB0Q"
+        private val CLIENT_SECRET: String = "mBFFDZMiGMy2MHDUkmfTB4sHXhBdN62o"
+        private val ACCOUNT_ID: String = "r0wh2aYsT0yQgD_uj7mz7g"
+        val USER_ID: String = "user1234"
     }
 
     private val zoom = Zoom.create(
