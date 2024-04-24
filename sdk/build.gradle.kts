@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     id("module.publication")
@@ -6,11 +8,23 @@ plugins {
 }
 
 jacoco {
-    toolVersion = "0.8.7" // Specify the desired JaCoCo version
-    reportsDirectory = file("$buildDir/reports/jacoco")
+    toolVersion = "0.8.12" // Specify the desired JaCoCo version
+    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
 
+val nativeTarget = when (val hostOs = System.getProperty("os.name")) {
+    "Mac OS X" -> "MacosX64"
+    "Linux" -> "LinuxX64"
+    else -> throw GradleException("Host $hostOs is not supported in Kotlin/Native.")
+}
+
+fun KotlinNativeTargetWithHostTests.configureTarget() =
+    binaries { executable { entryPoint = "com.kss.zoom.main" } }
+
 kotlin {
+    macosX64 { configureTarget() }
+    linuxX64 { configureTarget() }
+
     jvm {
         compilations.all {
             kotlinOptions {
@@ -91,7 +105,33 @@ kotlin {
                 testLogging {
                     events("passed", "skipped", "failed")
                 }
+                finalizedBy(tasks.withType(JacocoReport::class))
             }
+        }
+        val nativeMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation("io.ktor:ktor-client-cio:$ktorVersion")
+                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+            }
+        }
+        val nativeTest by creating {
+            dependsOn(commonTest)
+        }
+        val posixMain by creating {
+            dependsOn(nativeMain)
+        }
+        val posixTest by creating {
+            dependsOn(nativeTest)
+        }
+        arrayOf("macosX64", "linuxX64").forEach { targetName ->
+            getByName("${targetName}Main").dependsOn(posixMain)
+            getByName("${targetName}Test").dependsOn(posixTest)
+        }
+        arrayOf("macosX64", "linuxX64").forEach { targetName ->
+            getByName("${targetName}Main").dependsOn(nativeMain)
+            getByName("${targetName}Test").dependsOn(nativeTest)
         }
         val jsMain by getting {
             dependencies {
@@ -127,6 +167,7 @@ kotlin {
             .setFrom(files("${buildDir}/jacoco/jvmTest.exec"))
 
         reports {
+            csv.required = true
             xml.required = true
             html.required = true
         }

@@ -3,7 +3,9 @@ package com.kss.zoom.sdk.meetings.model
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ScheduledMeeting(
     val id: Long,
     val uuid: String,
