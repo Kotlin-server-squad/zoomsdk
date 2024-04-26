@@ -1,4 +1,7 @@
-package com.kss.zoom.sdk.users.model
+package com.kss.zoom.sdk.users.model.domain
+
+import com.kss.zoom.sdk.users.model.Email
+import com.kss.zoom.sdk.users.model.UserId
 
 data class User(
     val id: UserId,

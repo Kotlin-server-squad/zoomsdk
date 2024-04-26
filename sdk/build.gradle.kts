@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     id("module.publication")
     id("org.jetbrains.kotlin.plugin.serialization")
-    jacoco
+    id("jacoco")
 }
 
 jacoco {

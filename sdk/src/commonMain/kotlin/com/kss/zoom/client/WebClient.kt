@@ -85,6 +85,21 @@ class WebClient(
             }
         }
 
+    suspend inline fun <reified T> patch(
+        url: String,
+        token: String,
+        contentType: String?,
+        body: Any?
+    ): Result<T> =
+        runCoCatching {
+            httpClient.patch(url) {
+                header(correlationIdHeader, withCorrelationId())
+                bearerAuth(token)
+                contentType(contentType)
+                body?.let { setBody(it) }
+            }.body()
+        }
+
     suspend inline fun delete(url: String, token: String): Result<Unit> =
         runCoCatching {
             httpClient.delete(url) {
