@@ -3,22 +3,21 @@ package com.kss.zoom.sdk.users
 import com.kss.zoom.auth.model.UserTokens
 import com.kss.zoom.client.WebClient
 import com.kss.zoom.sdk.ZoomModuleBase
+import com.kss.zoom.sdk.common.ZOOM_API_URL
 import com.kss.zoom.sdk.common.model.Page
 import com.kss.zoom.sdk.common.toWebClient
-import com.kss.zoom.sdk.users.model.CreateUserCommand
-import com.kss.zoom.sdk.users.model.UpdateUserCommand
-import com.kss.zoom.sdk.users.model.User
+import com.kss.zoom.sdk.users.model.Email
 import com.kss.zoom.sdk.users.model.UserId
-import com.kss.zoom.sdk.users.model.api.GetListUser
-import com.kss.zoom.sdk.users.model.domain.CreateUser
-import com.kss.zoom.sdk.users.model.domain.UpdateUser
+import com.kss.zoom.sdk.users.model.api.*
+import com.kss.zoom.sdk.users.model.domain.*
 import com.kss.zoom.sdk.users.model.domain.UserInfo
-import com.kss.zoom.sdk.users.model.domain.UserPermissions
+import com.kss.zoom.sdk.users.model.pagination.PaginationObject
 import com.kss.zoom.sdk.users.model.pagination.UserPageQuery
+import com.kss.zoom.sdk.users.model.pagination.toDomain
 import io.ktor.client.*
 
 class Users(
-    client: WebClient,
+    private val client: WebClient,
     tokens: UserTokens? = null
 ) : ZoomModuleBase(tokens, client), IUsers {
     constructor(tokens: UserTokens? = null, httpClient: HttpClient? = null) : this(
@@ -27,30 +26,73 @@ class Users(
     )
 
     override suspend fun create(request: CreateUser): Result<User> {
-        TODO("Not yet implemented")
+        return client.post<CreateUserResponse>(
+            url = "$ZOOM_API_URL/users",
+            token = userTokens!!.accessToken.value,
+            contentType = WebClient.JSON_CONTENT_TYPE,
+            body = request.toApi()
+        ).map {
+            it.toDomain()
+        }
     }
 
     override suspend fun update(id: UserId, request: UpdateUser): Result<Unit> {
-        TODO("Not yet implemented")
+        return client.patch(
+            url = "$ZOOM_API_URL/users/$id",
+            token = userTokens!!.accessToken.value,
+            contentType = WebClient.JSON_CONTENT_TYPE,
+            body = request.toApi()
+        )
     }
 
     override suspend fun delete(id: UserId): Result<Unit> {
-        TODO("Not yet implemented")
+        return client.delete(
+            url = "$ZOOM_API_URL/users/$id",
+            token = userTokens!!.accessToken.value,
+        )
     }
 
     override suspend fun get(id: UserId): Result<UserInfo> {
-        TODO("Not yet implemented")
+        return client.get<GetUser>(
+            url = "$ZOOM_API_URL/users/$id",
+            token = userTokens!!.accessToken.value,
+        ).map {
+            it.toDomain()
+        }
     }
 
-    override suspend fun checkEmail(email: String): Result<Boolean> {
-        TODO("Not yet implemented")
+    override suspend fun checkEmail(email: Email): Result<Boolean> {
+        return client.get<CheckEmailResponse>(
+            url = "$ZOOM_API_URL/users/email?email=$email",
+            token = userTokens!!.accessToken.value,
+        ).map {
+            it.existedEmail ?: false
+        }
     }
 
     override suspend fun getUserPermissions(id: UserId): Result<UserPermissions> {
-        TODO("Not yet implemented")
+        return client.get<UserPermissionsResponse>(
+            url = "$ZOOM_API_URL/users/$id/permissions",
+            token = userTokens!!.accessToken.value,
+        ).map {
+            it.toDomain()
+        }
     }
 
     override suspend fun list(query: UserPageQuery): Result<Page<GetListUser>> {
-        TODO("Not yet implemented")
+        val params = StringBuilder("page_number=${query.pageNumber}&page_size=${query.pageSize}")
+        query.status?.let {
+            params.append("&status=$it")
+        }
+        query.roleId?.let {
+            params.append("&role_id=$it")
+        }
+        query.nextPageToken?.let {
+            params.append("&next_page_token=$it")
+        }
+        return client.get<PaginationObject>(
+            url = "$ZOOM_API_URL/users?$params",
+            token = userTokens!!.accessToken.value
+        ).map { it.toDomain() }
     }
 }
