@@ -5,6 +5,9 @@ import com.kss.zoom.sdk.common.call
 import com.kss.zoom.sdk.users.model.api.*
 import com.kss.zoom.sdk.users.model.api.UserInfo
 import com.kss.zoom.sdk.users.model.domain.*
+import com.kss.zoom.sdk.users.model.pagination.PaginationObject
+import com.kss.zoom.sdk.users.model.pagination.UserPageQuery
+import com.kss.zoom.sdk.users.model.pagination.toDomain
 import io.ktor.http.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -118,7 +121,44 @@ class UsersTest : ModuleTest<IUsers>() {
 
     @Test
     fun shouldListUsers() = runTest {
-        TODO()
+        val responseJson = """
+            {
+               "page_count":2,
+               "page_number":1,
+               "page_size":3,
+               "total_records":5,
+               "users":[
+                  {
+                     "email":"jchill@example.com",
+                     "first_name":"Jill",
+                     "last_name":"Chill",
+                     "type":1,
+                     "status": "active"
+                  },
+                  {
+                     "email":"jdoe@example.com",
+                     "first_name":"Jane",
+                     "last_name":"Doe",
+                     "type":1,
+                     "status": "active"
+                  },
+                  {
+                     "email":"fzane@example.com",
+                     "first_name":"Franke",
+                     "last_name":"Zane",
+                     "type":1,
+                     "status": "active"
+                  }
+               ]
+            }
+        """.trimIndent()
+        val query = UserPageQuery(
+            pageNumber = 1,
+            pageSize = 3
+        )
+        val response = call { users(responseJson).list(query) }
+        val expectedResponse = parseJson<PaginationObject>(responseJson).toDomain()
+        assertEquals(expectedResponse, response, "Response should be equal to expected response")
     }
 
     private fun users(responseBody: String? = null): IUsers =
