@@ -1,9 +1,11 @@
 package com.kss.zoom.cli.subcommands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.mordant.terminal.Terminal
 
-class HelpCommand : CliktCommand(help = "Help for Zoom CLI", name = "help") {
+class HelpCommand(private val terminal: Terminal) : CliktCommand(help = "Help for Zoom CLI", name = "help") {
+
     override fun run() {
-        echo("This is the help for the Zoom CLI")
+        terminal.println("Usage: zoomcli [COMMAND]")
     }
 }

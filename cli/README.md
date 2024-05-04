@@ -6,9 +6,9 @@ This is a command-line interface (CLI) for Zoom. It allows you to interact with 
 * List scheduled meetings
 
 ## Installation
-To install the CLI, run this command and follow the instructions:
+To install the CLI, run this command (from the root of the project) and follow the instructions:
 ```shell
-./gradlew install
+./gradlew :cli:install
 ```
 
 ## Usage
