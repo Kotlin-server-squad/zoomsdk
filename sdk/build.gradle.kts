@@ -13,7 +13,7 @@ jacoco {
 }
 
 val nativeTarget = when (val hostOs = System.getProperty("os.name")) {
-    "Mac OS X" -> "MacosX64"
+    "Mac OS X" -> "MacosArm64"
     "Linux" -> "LinuxX64"
     else -> throw GradleException("Host $hostOs is not supported in Kotlin/Native.")
 }
@@ -22,7 +22,7 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
     binaries { executable { entryPoint = "com.kss.zoom.main" } }
 
 kotlin {
-    macosX64 { configureTarget() }
+    macosArm64 { configureTarget() }
     linuxX64 { configureTarget() }
 
     jvm {
@@ -125,11 +125,11 @@ kotlin {
         val posixTest by creating {
             dependsOn(nativeTest)
         }
-        arrayOf("macosX64", "linuxX64").forEach { targetName ->
+        arrayOf("macosArm64" , "linuxX64").forEach { targetName ->
             getByName("${targetName}Main").dependsOn(posixMain)
             getByName("${targetName}Test").dependsOn(posixTest)
         }
-        arrayOf("macosX64", "linuxX64").forEach { targetName ->
+        arrayOf("macosArm64" , "linuxX64").forEach { targetName ->
             getByName("${targetName}Main").dependsOn(nativeMain)
             getByName("${targetName}Test").dependsOn(nativeTest)
         }

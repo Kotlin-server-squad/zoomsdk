@@ -106,6 +106,12 @@ class MeetingsTest {
                         else -> MEETING_API_RESPONSE
                     }
                 }
+                "/v2/users/me/meetings" -> {
+                    when (requestData.url.encodedQuery) {
+                        "type=scheduled&page_number=1&page_size=30" -> SCHEDULED_MEETINGS_API_RESPONSE
+                        else -> MEETING_API_RESPONSE
+                    }
+                }
                 "/v2/meetings/$MEETING_ID" -> MEETING_API_RESPONSE
                 else -> null
             }
@@ -181,6 +187,12 @@ class MeetingsTest {
     @Test
     fun shouldListScheduledMeetings() = runTest {
         val result = call { meetings.listScheduled(USER_ID) }
+        assertEquals(3, result.items.size, "Expected number of meetings should match")
+    }
+
+    @Test
+    fun shouldListMyScheduledMeetings() = runTest {
+        val result = call { meetings.listScheduled() }
         assertEquals(3, result.items.size, "Expected number of meetings should match")
     }
 }

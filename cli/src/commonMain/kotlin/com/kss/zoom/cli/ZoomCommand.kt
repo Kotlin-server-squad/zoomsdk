@@ -1,14 +1,13 @@
 package com.kss.zoom.cli
 
-import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.mordant.rendering.TextColors.*
+import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.mordant.terminal.Terminal
+import com.kss.zoom.Zoom
+import com.kss.zoom.cli.subcommands.*
 
-class ZoomCommand : CliktCommand(
+class ZoomCommand(zoom: Zoom, terminal: Terminal) : CliktCommand(
     help = """
         CLI for Zoom API
     """.trimIndent(),
@@ -18,8 +17,22 @@ class ZoomCommand : CliktCommand(
     name = "zoomcli"
 ) {
     init {
-        completionOption()
+        context {
+            helpOptionNames = emptySet()
+        }
+
+        subcommands(
+            HelpCommand(terminal),
+            VerboseCommand(),
+            ColorsCommand(),
+            ListMeetingsCommand(zoom),
+            LoginCommand(zoom, terminal)
+        )
     }
+
+    fun authCommands(): List<AuthCommand> =
+        registeredSubcommands().filterIsInstance<AuthCommand>()
+
     override fun run() {
     }
 }

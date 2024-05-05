@@ -50,6 +50,15 @@ interface IMeetings : IZoomModule {
     suspend fun deleteAll(userId: UserId): Result<Boolean>
 
     /**
+     * List all scheduled meetings for the currently logged-in user.
+     * @param query Limit and offset for the list of meetings.
+     * @return A page of meetings.
+     */
+    suspend fun listScheduled(
+        query: PagedQuery = PagedQuery(pageNumber = 1, pageSize = 30)
+    ): Result<Page<ScheduledMeeting>>
+
+    /**
      * List all scheduled meetings for the given user.
      * @param userId The id of the user to list meetings for.
      * @param query Limit and offset for the list of meetings.

@@ -10,10 +10,6 @@ import kotlinx.serialization.json.Json
 
 
 class ListMeetingsCommand(private val zoom: Zoom) : AuthCommand(help = "List meetings", name = "list-meetings") {
-    companion object {
-        // TODO replace with a call to the Users SDK to find out your user ID
-        const val USER_ID = "lqkrEKqMR1CCmALIVs73RQ"
-    }
 
     private val terminal = Terminal()
     private val json = Json { prettyPrint = true }
@@ -24,7 +20,7 @@ class ListMeetingsCommand(private val zoom: Zoom) : AuthCommand(help = "List mee
         }
         val meetings = zoom.meetings(this.tokens!!)
         val scheduledMeetings = runBlocking {
-            call { meetings.listScheduled(USER_ID) }
+            call { meetings.listScheduled() }
         }
         terminal.println(TextColors.green("Found ${scheduledMeetings.items.size} meetings"))
         val jsonArray = scheduledMeetings.items.map {
