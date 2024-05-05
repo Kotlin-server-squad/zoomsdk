@@ -17,6 +17,7 @@ interface IUsers : IZoomModule {
     suspend fun update(id: UserId, request: UpdateUser): Result<Unit>
     suspend fun delete(id: UserId): Result<Unit>
     suspend fun get(id: UserId): Result<UserInfo>
+    suspend fun me(): Result<UserInfo>
     suspend fun checkEmail(email: Email): Result<Boolean>
     suspend fun getUserPermissions(id: UserId): Result<UserPermissions>
     suspend fun list(query: UserPageQuery): Result<Page<GetListUser>>

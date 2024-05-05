@@ -26,7 +26,8 @@ class ZoomCommand(zoom: Zoom, terminal: Terminal) : CliktCommand(
             VerboseCommand(),
             ColorsCommand(),
             ListMeetingsCommand(zoom),
-            LoginCommand(zoom, terminal)
+            LoginCommand(zoom, terminal),
+            MeCommand(zoom)
         )
     }
 
