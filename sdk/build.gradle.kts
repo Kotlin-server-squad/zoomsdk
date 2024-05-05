@@ -23,7 +23,8 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
 
 kotlin {
     macosArm64 { configureTarget() }
-    linuxX64 { configureTarget() }
+    // See the client -> Blocked by an issue with curl: https://youtrack.jetbrains.com/issue/KTOR-6361
+//    linuxX64 { configureTarget() }
 
     jvm {
         compilations.all {
@@ -125,11 +126,11 @@ kotlin {
         val posixTest by creating {
             dependsOn(nativeTest)
         }
-        arrayOf("macosArm64", "linuxX64").forEach { targetName ->
+        arrayOf("macosArm64" /*, "linuxX64"*/).forEach { targetName ->
             getByName("${targetName}Main").dependsOn(posixMain)
             getByName("${targetName}Test").dependsOn(posixTest)
         }
-        arrayOf("macosArm64", "linuxX64").forEach { targetName ->
+        arrayOf("macosArm64" /*, "linuxX64"*/).forEach { targetName ->
             getByName("${targetName}Main").dependsOn(nativeMain)
             getByName("${targetName}Test").dependsOn(nativeTest)
         }
