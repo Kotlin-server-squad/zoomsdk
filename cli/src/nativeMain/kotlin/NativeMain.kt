@@ -1,5 +1,5 @@
-import com.kss.zoom.cli.runZoomCli
+import com.kss.zoom.cli.ZoomCli
 
-fun main(args: Array<String>) {
-    runZoomCli(args)
+fun main() {
+    ZoomCli.start()
 }

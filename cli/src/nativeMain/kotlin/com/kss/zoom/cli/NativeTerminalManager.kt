@@ -44,7 +44,7 @@ class NativeTerminalManager(private val terminal: Terminal) : TerminalManager {
                                 }
                             }
                             if (inputBuffer.isEmpty()) {
-                                terminal.print("zoom-cli> ")
+                                terminal.print(ZoomShell.prompt())
                             }
                         }
 
@@ -56,7 +56,10 @@ class NativeTerminalManager(private val terminal: Terminal) : TerminalManager {
                     }
                 }
 
-                else -> break
+                else -> {
+                    inputBuffer.clear()
+                    break
+                }
             }
         }
         return inputBuffer.toString()
