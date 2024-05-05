@@ -84,6 +84,10 @@ class Meetings private constructor(
         }
     }
 
+    override suspend fun listScheduled(query: PagedQuery): Result<Page<ScheduledMeeting>> {
+        return listScheduled("me", query)
+    }
+
     override suspend fun listScheduled(userId: UserId, query: PagedQuery): Result<Page<ScheduledMeeting>> {
         val params = StringBuilder("type=scheduled&page_number=${query.pageNumber}&page_size=${query.pageSize}")
         query.filter?.let {

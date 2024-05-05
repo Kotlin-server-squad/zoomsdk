@@ -33,11 +33,6 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
     binaries {
         executable {
             entryPoint = "main"
-//            compilations.getByName("main").cinterops {
-//                create("termios") {
-//                    includeDirs.allHeaders("cli/src/nativeMain/cinterop")
-//                }
-//            }
         }
     }
 
