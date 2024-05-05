@@ -25,7 +25,7 @@ application {
 
 val nativeTarget = when (val hostOs = System.getProperty("os.name")) {
     "Mac OS X" -> "MacosArm64"
-//    "Linux" -> "LinuxX64"
+    "Linux" -> "LinuxX64"
     else -> throw GradleException("Host $hostOs is not supported in Kotlin/Native.")
 }
 
@@ -38,10 +38,7 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
 
 kotlin {
     macosArm64 { configureTarget() }
-
-    // Uncomment the following block to add support for Linux
-    // Currently blocked by an issue with curl: https://youtrack.jetbrains.com/issue/KTOR-6361
-//    linuxX64 { configureTarget() }
+    linuxX64 { configureTarget() }
 
     val jvmTarget = jvm()
 
@@ -85,13 +82,18 @@ kotlin {
         }
         val nativeMain by creating {
             dependsOn(commonMain)
-            dependencies {
-                implementation("io.ktor:ktor-client-curl:$ktorVersion")
-
-            }
         }
         val nativeTest by creating {
             dependsOn(commonTest)
+        }
+        val linuxX64Main by getting {
+            dependsOn(nativeMain)
+        }
+        val macosArm64Main by getting {
+            dependsOn(nativeMain)
+            dependencies {
+                implementation("io.ktor:ktor-client-curl:$ktorVersion")
+            }
         }
         val posixMain by creating {
             dependsOn(nativeMain)
@@ -99,11 +101,11 @@ kotlin {
         val posixTest by creating {
             dependsOn(nativeTest)
         }
-        arrayOf("macosArm64" /*,"linuxX64"*/).forEach { targetName ->
+        arrayOf("macosArm64" ,"linuxX64").forEach { targetName ->
             getByName("${targetName}Main").dependsOn(posixMain)
             getByName("${targetName}Test").dependsOn(posixTest)
         }
-        arrayOf("macosArm64"/*,"linuxX64"*/).forEach { targetName ->
+        arrayOf("macosArm64","linuxX64").forEach { targetName ->
             getByName("${targetName}Main").dependsOn(nativeMain)
             getByName("${targetName}Test").dependsOn(nativeTest)
         }
