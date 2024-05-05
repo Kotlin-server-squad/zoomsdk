@@ -1,5 +1,8 @@
 package com.kss.zoom.sdk.users.model.domain
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class UserInfo(
     val id: String? = null,
     val email: String? = null,

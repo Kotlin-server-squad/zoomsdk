@@ -84,6 +84,20 @@ class UsersTest : ModuleTest<IUsers>() {
     }
 
     @Test
+    fun shouldGetMe() = runTest {
+        val responseJson = """
+           {
+           "email": "jchill@example.com",
+           "first_name": "Jill",
+           "last_name": "Chill",
+           "type": 1
+           }
+        """.trimIndent()
+        val response = call { users(responseJson).me() }
+        val expectedResponse = parseJson<UserInfo>(responseJson).toDomain()
+        assertEquals(expectedResponse, response, "Response should be equal to expected response")
+    }
+    @Test
     fun shouldCheckUsersEmail() = runTest {
         val responseJson = """
            {

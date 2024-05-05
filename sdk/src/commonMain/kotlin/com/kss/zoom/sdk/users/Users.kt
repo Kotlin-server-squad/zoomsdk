@@ -61,6 +61,10 @@ class Users(
         }
     }
 
+    override suspend fun me(): Result<UserInfo> {
+        return get("me")
+    }
+
     override suspend fun checkEmail(email: Email): Result<Boolean> {
         return client.get<CheckEmailResponse>(
             url = "$ZOOM_API_URL/users/email?email=$email",
