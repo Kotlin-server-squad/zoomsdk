@@ -42,6 +42,12 @@ kotlin {
 
     val jvmTarget = jvm()
 
+    js(IR) {
+        nodejs {
+            binaries.executable()
+        }
+    }
+
     sourceSets {
         all {
             languageSettings.apply {
@@ -61,8 +67,6 @@ kotlin {
                 implementation("com.github.ajalt.clikt:clikt:4.3.0")
                 implementation("com.github.ajalt.mordant:mordant:2.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-                implementation("io.ktor:ktor-server-core:$ktorVersion")
-                implementation("io.ktor:ktor-server-cio:$ktorVersion")
             }
         }
         val commonTest by getting {
@@ -70,21 +74,33 @@ kotlin {
                 implementation(libs.kotlin.test)
             }
         }
+        val jvmAndNativeMain by creating {
+            dependsOn(commonMain)
+            kotlin.srcDir("src/jvmAndNativeMain/kotlin")
+            dependencies {
+                implementation("io.ktor:ktor-server-core:$ktorVersion")
+                implementation("io.ktor:ktor-server-cio:$ktorVersion")
+            }
+        }
+        val jvmAndNativeTest by creating {
+            dependsOn(commonTest)
+            kotlin.srcDir("src/jvmAndNativeTest/kotlin")
+        }
+
         val jvmMain by getting {
+            dependsOn(jvmAndNativeMain)
             dependencies {
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
             }
         }
         val jvmTest by getting {
-            dependencies {
-
-            }
+            dependsOn(jvmAndNativeTest)
         }
         val nativeMain by creating {
-            dependsOn(commonMain)
+            dependsOn(jvmAndNativeMain)
         }
         val nativeTest by creating {
-            dependsOn(commonTest)
+            dependsOn(jvmAndNativeTest)
         }
         val linuxX64Main by getting {
             dependsOn(nativeMain)
