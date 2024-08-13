@@ -6,9 +6,6 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
-}
 
 dependencyResolutionManagement {
     repositories {
@@ -17,9 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "zoomsdk"
-include(":cli")
+rootProject.name = "zoom-sdk"
 include(":sdk")
-include(":examples:webhooks:ktor")
-include(":examples:webhooks:nodejs")
-include(":examples:webhooks:spring-boot")

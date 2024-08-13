@@ -3,7 +3,7 @@ plugins {
 }
 
 allprojects {
-    group = "com.kss.zoom"
+    group = "com.kss.zoom-sdk"
     version = "0.0.1"
 }
 

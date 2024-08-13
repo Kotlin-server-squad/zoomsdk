@@ -22,9 +22,11 @@ jobs:
         include:
           - target: publishIosArm64PublicationToSonatypeRepository
             os: macos-latest
-          - target: publishLinuxX64PublicationToSonatypeRepository
+          - target: publishAndroidReleasePublicationToSonatypeRepository
             os: ubuntu-latest
           - target: publishJvmPublicationToSonatypeRepository
+            os: ubuntu-latest
+          - target: publishLinuxX64PublicationToSonatypeRepository
             os: ubuntu-latest
           - target: publishKotlinMultiplatformPublicationToSonatypeRepository
             os: ubuntu-latest
@@ -58,3 +60,4 @@ jobs:
           -Psigning.gnupg.keyName='${{secrets.OSSRH_GPG_SECRET_KEY_ID}}'
           -PsonatypeUsername='${{secrets.OSSRH_USERNAME}}'
           -PsonatypePassword='${{secrets.OSSRH_PASSWORD}}'
+
