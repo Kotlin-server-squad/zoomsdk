@@ -1,5 +1,6 @@
 package com.kss.zoom.module.meetings.model.api
 
+import com.kss.zoom.common.toTimestamp
 import com.kss.zoom.module.meetings.model.Meeting
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -8,6 +9,7 @@ import kotlinx.serialization.Serializable
 data class MeetingResponse(
     val id: Long,
     val uuid: String,
+    val topic: String,
     val duration: Short,
     @SerialName("host_id") val hostId: String,
     @SerialName("host_email") val hostEmail: String,
@@ -21,5 +23,17 @@ data class MeetingResponse(
 )
 
 fun MeetingResponse.toModel(): Meeting {
-    TODO()
+    return Meeting(
+        id = id.toString(),
+        uuid = uuid,
+        hostId = hostId,
+        topic = topic,
+        createdAt = createdAt.toTimestamp(),
+        startTime = startTime.toTimestamp(),
+        duration = duration,
+        timezone = timezone,
+        startUrl = startUrl,
+        joinUrl = joinUrl,
+        password = password
+    )
 }

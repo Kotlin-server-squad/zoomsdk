@@ -8,7 +8,7 @@ data class Meeting(
     val createdAt: Long,
     val startTime: Long,
     val duration: Short,
-    val timeZone: String,
+    val timezone: String,
     val joinUrl: String,
     val startUrl: String,
     val password: String,

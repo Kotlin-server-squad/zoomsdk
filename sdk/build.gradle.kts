@@ -36,6 +36,9 @@ kotlin {
                 // Logging
                 implementation("io.ktor:ktor-client-logging:$ktor_version")
 
+                // Date and time
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0-RC.2")
+
                 // Serialization
                 implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
