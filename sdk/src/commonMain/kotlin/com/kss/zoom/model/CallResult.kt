@@ -6,14 +6,3 @@ sealed interface CallResult<out T> {
     data object NotFound : CallResult<Nothing>
 }
 
-fun <T, R> CallResult<T>.map(transform: (T) -> R): CallResult<R> = when (this) {
-    is CallResult.Success -> CallResult.Success(transform(data))
-    is CallResult.Error -> CallResult.Error(message)
-    is CallResult.NotFound -> CallResult.NotFound
-}
-
-suspend fun <T, R> CallResult<T>.comap(transform: suspend (T) -> R): CallResult<R> = when (this) {
-    is CallResult.Success -> CallResult.Success(transform(data))
-    is CallResult.Error -> CallResult.Error(message)
-    is CallResult.NotFound -> CallResult.NotFound
-}

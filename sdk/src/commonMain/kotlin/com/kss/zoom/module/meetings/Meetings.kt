@@ -1,11 +1,11 @@
 package com.kss.zoom.module.meetings
 
 import com.kss.zoom.client.ApiClient
+import com.kss.zoom.common.extensions.map
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.model.Page
 import com.kss.zoom.model.PageRequest
-import com.kss.zoom.model.map
 import com.kss.zoom.module.BaseZoomModule
 import com.kss.zoom.module.ZoomModule
 import com.kss.zoom.module.auth.Auth

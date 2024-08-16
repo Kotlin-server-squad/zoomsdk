@@ -1,8 +1,8 @@
 package com.kss.zoom.module.auth
 
 import com.kss.zoom.client.ApiClient
+import com.kss.zoom.common.extensions.map
 import com.kss.zoom.model.CallResult
-import com.kss.zoom.model.map
 import com.kss.zoom.module.auth.Auth.Companion.FORM_URL_ENCODED_CONTENT_TYPE
 import com.kss.zoom.module.auth.model.AuthConfig
 import com.kss.zoom.module.auth.model.AuthResponse

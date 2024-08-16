@@ -2,11 +2,11 @@ package com.kss.zoom
 
 import com.kss.zoom.client.ApiClient
 import com.kss.zoom.common.call
+import com.kss.zoom.common.extensions.coroutines.map
 import com.kss.zoom.common.notBlank
 import com.kss.zoom.common.storage.InMemoryTokenStorage
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
-import com.kss.zoom.model.comap
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.auth.model.AuthConfig
 import com.kss.zoom.module.meetings.Meetings
@@ -25,7 +25,7 @@ class Zoom private constructor(
         auth.getAuthorizationUrl(callbackUrl)
 
     suspend fun authorize(userId: String, code: String): CallResult<Unit> {
-        return auth.authorize(code).comap {
+        return auth.authorize(code).map {
             // Save the user ID and tokens
             tokenStorage.saveTokens(userId, it)
         }
@@ -34,7 +34,7 @@ class Zoom private constructor(
     suspend fun reauthorize(userId: String): CallResult<Unit> {
         val refreshToken = tokenStorage.getRefreshToken(userId)
             ?: return CallResult.Error("No refresh token found for user $userId")
-        return auth.reauthorize(refreshToken).comap {
+        return auth.reauthorize(refreshToken).map {
             tokenStorage.saveTokens(userId, it)
         }
     }

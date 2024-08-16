@@ -1,6 +1,6 @@
 package com.kss.zoom.module.meetings.model.api
 
-import com.kss.zoom.common.toTimestamp
+import com.kss.zoom.common.extensions.toTimestamp
 import com.kss.zoom.module.meetings.model.Meeting
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
