@@ -5,7 +5,6 @@ import com.kss.zoom.common.extensions.map
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.model.Page
-import com.kss.zoom.model.PageRequest
 import com.kss.zoom.module.BaseZoomModule
 import com.kss.zoom.module.ZoomModule
 import com.kss.zoom.module.auth.Auth
@@ -26,7 +25,7 @@ interface Meetings : ZoomModule {
     suspend fun get(request: GetRequest): CallResult<Meeting>
     suspend fun delete(request: DeleteRequest): CallResult<Meeting>
     suspend fun deleteAll(userId: String): CallResult<Int>
-    suspend fun list(userId: String, pageRequest: PageRequest): CallResult<Page<Meeting>>
+    suspend fun list(request: ListRequest): CallResult<Page<Meeting>>
 }
 
 private class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client: ApiClient) :
@@ -64,8 +63,8 @@ private class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private va
         TODO("Not yet implemented")
     }
 
-    override suspend fun list(userId: String, pageRequest: PageRequest): CallResult<Page<Meeting>> =
-        withAccessToken(userId) { token ->
+    override suspend fun list(request: ListRequest): CallResult<Page<Meeting>> =
+        withAccessToken(request.userId) { token ->
             TODO("Not yet implemented")
         }
 }
