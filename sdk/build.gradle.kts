@@ -44,6 +44,9 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
                 implementation("io.ktor:ktor-client-json:$ktor_version")
                 implementation("io.ktor:ktor-client-serialization:$ktor_version")
+
+                // Caching
+                implementation("io.github.reactivecircus.cache4k:cache4k:0.13.0")
             }
         }
         val commonTest by getting {
