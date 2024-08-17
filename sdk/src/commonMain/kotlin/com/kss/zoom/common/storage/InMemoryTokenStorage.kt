@@ -2,9 +2,7 @@ package com.kss.zoom.common.storage
 
 import com.kss.zoom.module.auth.model.UserTokens
 import io.github.reactivecircus.cache4k.Cache
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 class InMemoryTokenStorage(config: InMemoryTokenStorageConfig = InMemoryTokenStorageConfig.DEFAULT) : TokenStorage {
@@ -19,9 +17,11 @@ class InMemoryTokenStorage(config: InMemoryTokenStorageConfig = InMemoryTokenSto
         .expireAfterWrite(config.accessTokenExpiry)
         .build()
 
-    override suspend fun saveTokens(userId: String, userTokens: UserTokens) = withContext(ioContext) {
-        refreshTokenCache.put(userId, userTokens.refreshToken)
-        accessTokenCache.put(userTokens.refreshToken, userTokens.accessToken)
+    override suspend fun saveTokens(userId: String, userTokens: UserTokens): Unit = withContext(ioContext) {
+        coroutineScope {
+            launch { refreshTokenCache.put(userId, userTokens.refreshToken) }
+            launch { accessTokenCache.put(userTokens.refreshToken, userTokens.accessToken) }
+        }
     }
 
     override suspend fun getAccessToken(userId: String): String? = withContext(ioContext) {

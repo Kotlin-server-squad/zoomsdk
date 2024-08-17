@@ -8,9 +8,12 @@ import com.kss.zoom.common.storage.InMemoryTokenStorage
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.module.auth.Auth
+import com.kss.zoom.module.auth.DefaultAuth
 import com.kss.zoom.module.auth.model.AuthConfig
+import com.kss.zoom.module.meetings.DefaultMeetings
 import com.kss.zoom.module.meetings.Meetings
 import com.kss.zoom.module.meetings.model.GetRequest
+import com.kss.zoom.module.users.DefaultUsers
 import com.kss.zoom.module.users.Users
 import kotlinx.coroutines.runBlocking
 
@@ -61,11 +64,11 @@ class Zoom private constructor(
             clientId.notBlank("clientId")
             clientSecret.notBlank("clientSecret")
 
-            val auth = Auth.create(AuthConfig(clientId, clientSecret), client)
+            val auth = DefaultAuth(AuthConfig(clientId, clientSecret), client)
 
             // Create modules
-            val meetings = Meetings.create(auth, tokenStorage, client)
-            val users = Users.create(auth, tokenStorage, client)
+            val meetings = DefaultMeetings(auth, tokenStorage, client)
+            val users = DefaultUsers(auth, tokenStorage, client)
 
             // Create Zoom instance
             return Zoom(auth, tokenStorage, meetings, users)

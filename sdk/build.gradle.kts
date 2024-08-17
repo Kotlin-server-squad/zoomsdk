@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     id("module.publication")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("dev.mokkery")
 }
 
 kotlin {
