@@ -5,7 +5,8 @@ import com.kss.zoom.model.CallResult
 import com.kss.zoom.module.auth.Auth.Companion.FORM_URL_ENCODED_CONTENT_TYPE
 import com.kss.zoom.module.auth.model.AuthConfig
 import com.kss.zoom.module.auth.model.AuthResponse
-import dev.mokkery.answering.calls
+import com.kss.zoom.test.withMockClient
+import dev.mokkery.answering.returns
 import dev.mokkery.everySuspend
 import dev.mokkery.mock
 import kotlinx.coroutines.test.runTest
@@ -24,10 +25,10 @@ class DefaultAuthTest {
 
     @Test
     fun `should provide correctly encoded authorization url`() = runTest {
-        withMockClient { auth ->
+        withMockClient {
             assertEquals(
                 "${config.baseUrl}/oauth/authorize?response_type=code&client_id=clientId&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fcallback",
-                auth.getAuthorizationUrl("http://localhost:8080/callback"),
+                auth(it).getAuthorizationUrl("http://localhost:8080/callback"),
                 "Authorization URL should be equal"
             )
         }
@@ -45,25 +46,23 @@ class DefaultAuthTest {
                         contentType = FORM_URL_ENCODED_CONTENT_TYPE,
                         body = null
                     )
-                } calls { _ ->
-                    CallResult.Success(
-                        AuthResponse(
-                            accessToken = "accessToken",
-                            refreshToken = "refreshToken",
-                            tokenType = "tokenType",
-                            expiresIn = 3600
-                        )
+                } returns CallResult.Success(
+                    AuthResponse(
+                        accessToken = "accessToken",
+                        refreshToken = "refreshToken",
+                        tokenType = "tokenType",
+                        expiresIn = 3600
                     )
-                }
+                )
             }
-        ) { auth ->
-            when (val result = auth.authorize("code")) {
+        ) {
+            when (val result = auth(it).authorize("code")) {
                 is CallResult.Success -> {
                     val userTokens = result.data
-                    assertEquals("accessToken", userTokens.accessToken, "accessToken should be equal")
-                    assertEquals("refreshToken", userTokens.refreshToken, "refreshToken should be equal")
-                    assertEquals("tokenType", userTokens.tokenType, "tokenType should be equal")
-                    assertEquals(3600, userTokens.expiresIn, "expiresIn should be equal")
+                    assertEquals("accessToken", userTokens.accessToken, "Access token should be equal")
+                    assertEquals("refreshToken", userTokens.refreshToken, "Refresh token should be equal")
+                    assertEquals("tokenType", userTokens.tokenType, "Token type should be equal")
+                    assertEquals(3600, userTokens.expiresIn, "Expires in should be equal")
                 }
 
                 else -> fail("Unexpected result: $result")
@@ -81,25 +80,23 @@ class DefaultAuthTest {
                         body = "grant_type=refresh_token&refresh_token=refreshToken",
                         contentType = FORM_URL_ENCODED_CONTENT_TYPE,
                     )
-                } calls { _ ->
-                    CallResult.Success(
-                        AuthResponse(
-                            accessToken = "newAccessToken",
-                            refreshToken = "newRefreshToken",
-                            tokenType = "tokenType",
-                            expiresIn = 3600
-                        )
+                } returns CallResult.Success(
+                    AuthResponse(
+                        accessToken = "newAccessToken",
+                        refreshToken = "newRefreshToken",
+                        tokenType = "tokenType",
+                        expiresIn = 3600
                     )
-                }
+                )
             }
-        ) { auth ->
-            when (val result = auth.reauthorize("refreshToken")) {
+        ) {
+            when (val result = auth(it).reauthorize("refreshToken")) {
                 is CallResult.Success -> {
                     val userTokens = result.data
-                    assertEquals("newAccessToken", userTokens.accessToken, "accessToken should be equal")
-                    assertEquals("newRefreshToken", userTokens.refreshToken, "refreshToken should be equal")
-                    assertEquals("tokenType", userTokens.tokenType, "tokenType should be equal")
-                    assertEquals(3600, userTokens.expiresIn, "expiresIn should be equal")
+                    assertEquals("newAccessToken", userTokens.accessToken, "Access token should be equal")
+                    assertEquals("newRefreshToken", userTokens.refreshToken, "Refresh token should be equal")
+                    assertEquals("tokenType", userTokens.tokenType, "Token type should be equal")
+                    assertEquals(3600, userTokens.expiresIn, "Expires in should be equal")
                 }
 
                 else -> fail("Unexpected result: $result")
@@ -107,7 +104,5 @@ class DefaultAuthTest {
         }
     }
 
-    private suspend fun withMockClient(mockClient: ApiClient = mock {}, block: suspend (auth: DefaultAuth) -> Unit) {
-        block(DefaultAuth(config, mockClient))
-    }
+    private fun auth(client: ApiClient): DefaultAuth = DefaultAuth(config, client)
 }

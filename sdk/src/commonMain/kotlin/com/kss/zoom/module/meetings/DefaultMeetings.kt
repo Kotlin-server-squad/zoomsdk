@@ -39,7 +39,7 @@ class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client
     }
 
     override suspend fun delete(request: DeleteRequest): CallResult<Meeting> =
-        withAccessToken(request.meetingId) { token ->
+        withAccessToken(request.userId) { token ->
             client.delete<MeetingResponse>("meetings/${request.meetingId}", token).map { it.toModel() }
         }
 
