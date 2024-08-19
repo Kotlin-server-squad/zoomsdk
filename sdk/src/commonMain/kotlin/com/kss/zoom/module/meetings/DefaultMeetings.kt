@@ -2,15 +2,20 @@ package com.kss.zoom.module.meetings
 
 import com.kss.zoom.client.ApiClient
 import com.kss.zoom.common.extensions.map
+import com.kss.zoom.common.extensions.coroutines.map as coMap
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
-import com.kss.zoom.model.Page
+import com.kss.zoom.model.pagination.Page
+import com.kss.zoom.model.pagination.PageRequest
 import com.kss.zoom.module.ZoomModuleBase
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.meetings.model.*
 import com.kss.zoom.module.meetings.model.api.MeetingRequest
 import com.kss.zoom.module.meetings.model.api.MeetingResponse
+import com.kss.zoom.module.meetings.model.api.PaginationObject
 import com.kss.zoom.module.meetings.model.api.toModel
+import com.kss.zoom.module.meetings.model.pagination.filter.MeetingType
+import com.kss.zoom.module.meetings.model.pagination.filter.MeetingTypeFilter
 
 class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client: ApiClient) :
     ZoomModuleBase(auth, tokenStorage), Meetings {
@@ -25,7 +30,7 @@ class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client
                     type = 2,
                     startTime = request.startTime.toString(),
                     duration = request.duration,
-                    timeZone = request.timezone
+                    timezone = request.timezone
                 )
             ).map { it.toModel() }
         }
@@ -43,12 +48,43 @@ class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client
             client.delete<MeetingResponse>("meetings/${request.meetingId}", token).map { it.toModel() }
         }
 
-    override suspend fun deleteAll(userId: String): CallResult<Int> = withAccessToken(userId) { token ->
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteAll(request: DeleteAllRequest): CallResult<Int> =
+        deleteAllInternal(request)
 
     override suspend fun list(request: ListRequest): CallResult<Page<Meeting>> =
         withAccessToken(request.userId) { token ->
-            TODO("Not yet implemented")
+            val params =
+                StringBuilder("type=scheduled&page_number=${request.pageRequest.index}&page_size=${request.pageRequest.size}")
+            request.pageRequest.filters.forEach { params.append("&${it.toQueryString()}") }
+            request.pageRequest.nextPageToken?.let { params.append("&next_page_token=$it") }
+            client.get<PaginationObject>(
+                path = "/users/${request.userId}/meetings?$params",
+                token = token
+            ).map { it.toModel() }
         }
+
+    private suspend fun deleteAllInternal(request: DeleteAllRequest, count: Int = 0): CallResult<Int> {
+        return list(
+            ListRequest(
+                userId = request.userId,
+                pageRequest = PageRequest(
+                    filters = listOf(
+                        MeetingTypeFilter(MeetingType.Scheduled)
+                    ),
+                    nextPageToken = request.nextPageToken
+                )
+            )
+        ).coMap { page ->
+            page.items.forEach {
+                delete(DeleteRequest(request.userId, it.id))
+            }
+            page.nextPageToken?.let {
+                deleteAllInternal(
+                    request = request.copy(nextPageToken = it),
+                    count = count + page.items.size
+                )
+            }
+            count + page.items.size
+        }
+    }
 }

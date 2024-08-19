@@ -3,8 +3,8 @@ package com.kss.zoom.module.users
 import com.kss.zoom.client.ApiClient
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
-import com.kss.zoom.model.Page
-import com.kss.zoom.model.PageRequest
+import com.kss.zoom.model.pagination.Page
+import com.kss.zoom.model.pagination.PageRequest
 import com.kss.zoom.module.ZoomModuleBase
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.users.model.CreateRequest

@@ -9,5 +9,5 @@ data class MeetingRequest(
     val type: Short,
     @SerialName("start_time") val startTime: String,
     val duration: Short,
-    val timeZone: String,
+    val timezone: String,
 )

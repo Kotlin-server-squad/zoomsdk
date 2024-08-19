@@ -1,8 +1,8 @@
 package com.kss.zoom.module.users
 
 import com.kss.zoom.model.CallResult
-import com.kss.zoom.model.Page
-import com.kss.zoom.model.PageRequest
+import com.kss.zoom.model.pagination.Page
+import com.kss.zoom.model.pagination.PageRequest
 import com.kss.zoom.module.ZoomModule
 import com.kss.zoom.module.users.model.CreateRequest
 import com.kss.zoom.module.users.model.UpdateRequest
