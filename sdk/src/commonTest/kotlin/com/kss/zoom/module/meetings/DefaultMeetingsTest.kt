@@ -22,6 +22,7 @@ import kotlin.test.fail
 
 class DefaultMeetingsTest {
     companion object {
+        private const val MEETING_ID = "userId"
         private const val USER_ID = "userId"
         private const val ACCESS_TOKEN = "accessToken"
         private val meetingResponse = MeetingResponse(
@@ -72,6 +73,25 @@ class DefaultMeetingsTest {
 
                 else -> fail("Unexpected result: $result")
             }
+        }
+    }
+
+    @Test
+    fun `should update a meeting`() = runTest {
+        withMockClient(
+            mockClient = mock {
+                everySuspend {
+                    patch<Unit>(
+                        path = "/meetings/$MEETING_ID",
+                        token = ACCESS_TOKEN
+                    )
+                } returns CallResult.Success(Unit)
+                everySuspend {
+                    get<MeetingResponse>("meetings/$MEETING_ID", ACCESS_TOKEN)
+                } returns CallResult.Success(meetingResponse)
+            }
+        ) {
+
         }
     }
 
