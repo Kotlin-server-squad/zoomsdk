@@ -16,6 +16,7 @@ import com.kss.zoom.module.meetings.model.GetRequest
 import com.kss.zoom.module.users.DefaultUsers
 import com.kss.zoom.module.users.Users
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 
 class Zoom private constructor(
     private val auth: Auth,
@@ -47,18 +48,12 @@ class Zoom private constructor(
 
     companion object {
 
-        /**
-         * TODO: The problem here is that it's tied to a single user!
-         * Ideally we want a single Zoom instance that can be used by multiple (many: thousands) users.
-         *
-         * Solution:
-         * - There needs to be a map: key is the user ID, value is the UserTokens, or maybe just the refresh token (memory space)
-         */
         fun create(
             clientId: String,
             clientSecret: String,
             client: ApiClient = ApiClient.instance(),
             tokenStorage: TokenStorage = InMemoryTokenStorage(),
+            clock: Clock = Clock.System,
         ): Zoom {
             // Validate input
             clientId.notBlank("clientId")
@@ -67,8 +62,8 @@ class Zoom private constructor(
             val auth = DefaultAuth(AuthConfig(clientId, clientSecret), client)
 
             // Create modules
-            val meetings = DefaultMeetings(auth, tokenStorage, client)
-            val users = DefaultUsers(auth, tokenStorage, client)
+            val meetings = DefaultMeetings(auth, tokenStorage, clock, client)
+            val users = DefaultUsers(auth, tokenStorage, clock, client)
 
             // Create Zoom instance
             return Zoom(auth, tokenStorage, meetings, users)

@@ -7,8 +7,10 @@ import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.meetings.model.CreateRequest
 import com.kss.zoom.module.meetings.model.DeleteRequest
 import com.kss.zoom.module.meetings.model.GetRequest
+import com.kss.zoom.module.meetings.model.UpdateRequest
 import com.kss.zoom.module.meetings.model.api.MeetingResponse
 import com.kss.zoom.module.meetings.model.api.toModel
+import com.kss.zoom.test.testClock
 import com.kss.zoom.test.withMockClient
 import dev.mokkery.answering.calls
 import dev.mokkery.answering.returns
@@ -16,9 +18,11 @@ import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.TimeZone
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
+import kotlin.time.Duration.Companion.minutes
 
 class DefaultMeetingsTest {
     companion object {
@@ -33,8 +37,8 @@ class DefaultMeetingsTest {
             hostId = "hostId",
             hostEmail = "hostEmail",
             status = "status",
-            startTime = "2024-01-01T00:00:00Z",
-            createdAt = "2024-01-01T00:00:00Z",
+            startTime = "2024-01-10T00:00:00Z",
+            createdAt = "2024-01-01T10:00:00Z",
             timezone = "timezone",
             startUrl = "startUrl",
             joinUrl = "joinUrl",
@@ -62,9 +66,9 @@ class DefaultMeetingsTest {
                 CreateRequest(
                     userId = USER_ID,
                     topic = "topic",
-                    startTime = 0,
+                    startTime = testClock.plus(1.minutes),
                     duration = 60,
-                    timezone = "timezone"
+                    timezone = TimeZone.UTC
                 )
             )) {
                 is CallResult.Success -> {
@@ -78,20 +82,44 @@ class DefaultMeetingsTest {
 
     @Test
     fun `should update a meeting`() = runTest {
+        val updateRequest = UpdateRequest(
+            userId = USER_ID,
+            meetingId = MEETING_ID,
+            topic = "updatedTopic",
+            startTime = testClock.plus(1.minutes),
+            duration = 1200,
+            timezone = TimeZone.UTC
+        )
+        val expectedMeetingResponse = meetingResponse.copy(
+            topic = updateRequest.topic!!,
+            startTime = updateRequest.startTime?.let { testClock.toIsoString(it) }!!,
+            duration = updateRequest.duration!!,
+            timezone = updateRequest.timezone?.id!!
+        )
         withMockClient(
             mockClient = mock {
                 everySuspend {
                     patch<Unit>(
                         path = "/meetings/$MEETING_ID",
-                        token = ACCESS_TOKEN
+                        token = ACCESS_TOKEN,
+                        contentType = "application/json",
+                        body = any()
                     )
                 } returns CallResult.Success(Unit)
                 everySuspend {
                     get<MeetingResponse>("meetings/$MEETING_ID", ACCESS_TOKEN)
-                } returns CallResult.Success(meetingResponse)
+                } returns CallResult.Success(expectedMeetingResponse)
             }
         ) {
+            meetings(it).update(updateRequest).let { result ->
+                when (result) {
+                    is CallResult.Success -> {
+                        assertEquals(expectedMeetingResponse.toModel(), result.data, "Meeting should be equal")
+                    }
 
+                    else -> fail("Unexpected result: $result")
+                }
+            }
         }
     }
 
@@ -137,6 +165,22 @@ class DefaultMeetingsTest {
         }
     }
 
+    // TODO verify CallResult.Error
+//    @Test
+    fun `should not accept an invalid request to create a meeting`() = runTest {
+        withMockClient {
+            meetings(it).create(
+                CreateRequest(
+                    userId = USER_ID,
+                    topic = "topic",
+                    startTime = testClock.minus(1.minutes), // Invalid start date!
+                    duration = 60,
+                    timezone = TimeZone.UTC
+                )
+            )
+        }
+    }
+
     private fun meetings(
         client: ApiClient,
         auth: Auth = mock {},
@@ -144,6 +188,6 @@ class DefaultMeetingsTest {
             everySuspend { getAccessToken(USER_ID) } returns ACCESS_TOKEN
         },
     ): DefaultMeetings {
-        return DefaultMeetings(auth, storage, client)
+        return DefaultMeetings(auth, storage, testClock, client)
     }
 }

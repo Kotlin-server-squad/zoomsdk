@@ -10,15 +10,19 @@ import com.kss.zoom.model.pagination.PageRequest
 import com.kss.zoom.module.ZoomModuleBase
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.meetings.model.*
-import com.kss.zoom.module.meetings.model.api.*
+import com.kss.zoom.module.meetings.model.api.MeetingRequest
+import com.kss.zoom.module.meetings.model.api.MeetingResponse
+import com.kss.zoom.module.meetings.model.api.PaginationObject
+import com.kss.zoom.module.meetings.model.api.toModel
 import com.kss.zoom.module.meetings.model.pagination.filter.MeetingType
 import com.kss.zoom.module.meetings.model.pagination.filter.MeetingTypeFilter
+import kotlinx.datetime.Clock
 import com.kss.zoom.common.extensions.coroutines.map as coMap
 
-class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client: ApiClient) :
-    ZoomModuleBase(auth, tokenStorage), Meetings {
+class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, clock: Clock, private val client: ApiClient) :
+    ZoomModuleBase(auth, tokenStorage, clock), Meetings {
     override suspend fun create(request: CreateRequest): CallResult<Meeting> =
-        withAccessToken(request.userId) { token ->
+        withAccessToken(request) { token ->
             client.post<MeetingResponse>(
                 path = "/meetings",
                 token = token,
@@ -28,13 +32,13 @@ class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client
                     type = 2,
                     startTime = request.startTime.toString(),
                     duration = request.duration,
-                    timezone = request.timezone
+                    timezone = request.timezone.id
                 )
             ).map { it.toModel() }
         }
 
     override suspend fun update(request: UpdateRequest): CallResult<Meeting> =
-        withAccessToken(request.userId) { token ->
+        withAccessToken(request) { token ->
             client.patch<Unit>(
                 path = "/meetings/${request.meetingId}",
                 token = token,
@@ -50,12 +54,12 @@ class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client
             }
         }
 
-    override suspend fun get(request: GetRequest): CallResult<Meeting> = withAccessToken(request.userId) { token ->
+    override suspend fun get(request: GetRequest): CallResult<Meeting> = withAccessToken(request) { token ->
         client.get<MeetingResponse>("meetings/${request.meetingId}", token).map { it.toModel() }
     }
 
     override suspend fun delete(request: DeleteRequest): CallResult<Meeting> =
-        withAccessToken(request.userId) { token ->
+        withAccessToken(request) { token ->
             client.delete<MeetingResponse>("meetings/${request.meetingId}", token).map { it.toModel() }
         }
 
@@ -63,7 +67,7 @@ class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, private val client
         deleteAllInternal(request)
 
     override suspend fun list(request: ListRequest): CallResult<Page<Meeting>> =
-        withAccessToken(request.userId) { token ->
+        withAccessToken(request) { token ->
             val params =
                 StringBuilder("type=scheduled&page_number=${request.pageRequest.index}&page_size=${request.pageRequest.size}")
             request.pageRequest.filters.forEach { params.append("&${it.toQueryString()}") }

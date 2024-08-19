@@ -10,9 +10,10 @@ import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.users.model.CreateRequest
 import com.kss.zoom.module.users.model.UpdateRequest
 import com.kss.zoom.module.users.model.User
+import kotlinx.datetime.Clock
 
-class DefaultUsers(auth: Auth, tokenStorage: TokenStorage, client: ApiClient) :
-    ZoomModuleBase(auth, tokenStorage), Users {
+class DefaultUsers(auth: Auth, tokenStorage: TokenStorage, clock: Clock, client: ApiClient) :
+    ZoomModuleBase(auth, tokenStorage, clock), Users {
 
     override suspend fun create(request: CreateRequest): CallResult<User> {
         TODO("Not yet implemented")
