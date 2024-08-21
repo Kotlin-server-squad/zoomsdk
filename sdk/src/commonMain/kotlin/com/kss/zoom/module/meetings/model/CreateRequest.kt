@@ -4,6 +4,7 @@ import com.kss.zoom.common.greaterZero
 import com.kss.zoom.common.isInFuture
 import com.kss.zoom.common.notBlank
 import com.kss.zoom.model.request.TimeAwareUserRequest
+import com.kss.zoom.module.meetings.model.api.MeetingRequest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -25,3 +26,12 @@ data class CreateRequest(
         startTime.isInFuture("startTime", clock)
     }
 }
+
+fun CreateRequest.toApi(): MeetingRequest =
+    MeetingRequest(
+        topic = topic,
+        type = 2,
+        startTime = startTime.toString(),
+        duration = duration,
+        timezone = timezone.id
+    )

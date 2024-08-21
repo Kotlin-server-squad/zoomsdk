@@ -8,9 +8,9 @@ import com.kss.zoom.model.CallResult
 import com.kss.zoom.model.pagination.Page
 import com.kss.zoom.model.pagination.PageRequest
 import com.kss.zoom.module.ZoomModuleBase
+import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.meetings.model.*
-import com.kss.zoom.module.meetings.model.api.MeetingRequest
 import com.kss.zoom.module.meetings.model.api.MeetingResponse
 import com.kss.zoom.module.meetings.model.api.PaginationObject
 import com.kss.zoom.module.meetings.model.api.toModel
@@ -19,28 +19,28 @@ import com.kss.zoom.module.meetings.model.pagination.filter.MeetingTypeFilter
 import kotlinx.datetime.Clock
 import com.kss.zoom.common.extensions.coroutines.map as coMap
 
-class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, clock: Clock, private val client: ApiClient) :
-    ZoomModuleBase(auth, tokenStorage, clock), Meetings {
+class DefaultMeetings(
+    config: ZoomModuleConfig,
+    auth: Auth,
+    tokenStorage: TokenStorage,
+    clock: Clock,
+    private val client: ApiClient,
+) :
+    ZoomModuleBase(config, auth, tokenStorage, clock), Meetings {
     override suspend fun create(request: CreateRequest): CallResult<Meeting> =
         withAccessToken(request) { token ->
             client.post<MeetingResponse>(
-                path = "/meetings",
+                url = url("/meetings"),
                 token = token,
                 contentType = "application/json",
-                body = MeetingRequest(
-                    topic = request.topic,
-                    type = 2,
-                    startTime = request.startTime.toString(),
-                    duration = request.duration,
-                    timezone = request.timezone.id
-                )
+                body = request.toApi()
             ).map { it.toModel() }
         }
 
     override suspend fun update(request: UpdateRequest): CallResult<Meeting> =
         withAccessToken(request) { token ->
             client.patch<Unit>(
-                path = "/meetings/${request.meetingId}",
+                url = url("/meetings/${request.meetingId}"),
                 token = token,
                 contentType = "application/json",
                 body = request.toApi()
@@ -55,12 +55,12 @@ class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, clock: Clock, priv
         }
 
     override suspend fun get(request: GetRequest): CallResult<Meeting> = withAccessToken(request) { token ->
-        client.get<MeetingResponse>("meetings/${request.meetingId}", token).map { it.toModel() }
+        client.get<MeetingResponse>(url("/meetings/${request.meetingId}"), token).map { it.toModel() }
     }
 
     override suspend fun delete(request: DeleteRequest): CallResult<Meeting> =
         withAccessToken(request) { token ->
-            client.delete<MeetingResponse>("meetings/${request.meetingId}", token).map { it.toModel() }
+            client.delete<MeetingResponse>(url("/meetings/${request.meetingId}"), token).map { it.toModel() }
         }
 
     override suspend fun deleteAll(request: DeleteAllRequest): CallResult<Int> =
@@ -73,7 +73,7 @@ class DefaultMeetings(auth: Auth, tokenStorage: TokenStorage, clock: Clock, priv
             request.pageRequest.filters.forEach { params.append("&${it.toQueryString()}") }
             request.pageRequest.nextPageToken?.let { params.append("&next_page_token=$it") }
             client.get<PaginationObject>(
-                path = "/users/${request.userId}/meetings?$params",
+                url = url("/users/${request.userId}/meetings?$params"),
                 token = token
             ).map { it.toModel() }
         }

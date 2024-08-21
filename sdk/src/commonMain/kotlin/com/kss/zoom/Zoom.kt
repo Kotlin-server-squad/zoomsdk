@@ -7,6 +7,7 @@ import com.kss.zoom.common.notBlank
 import com.kss.zoom.common.storage.InMemoryTokenStorage
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
+import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.auth.DefaultAuth
 import com.kss.zoom.module.auth.model.AuthConfig
@@ -51,7 +52,7 @@ class Zoom private constructor(
         fun create(
             clientId: String,
             clientSecret: String,
-            client: ApiClient = ApiClient.instance(),
+            client: ApiClient = ApiClient.DEFAULT,
             tokenStorage: TokenStorage = InMemoryTokenStorage(),
             clock: Clock = Clock.System,
         ): Zoom {
@@ -62,8 +63,9 @@ class Zoom private constructor(
             val auth = DefaultAuth(AuthConfig(clientId, clientSecret), client)
 
             // Create modules
-            val meetings = DefaultMeetings(auth, tokenStorage, clock, client)
-            val users = DefaultUsers(auth, tokenStorage, clock, client)
+            val moduleConfig = ZoomModuleConfig()
+            val meetings = DefaultMeetings(moduleConfig, auth, tokenStorage, clock, client)
+            val users = DefaultUsers(moduleConfig, auth, tokenStorage, clock, client)
 
             // Create Zoom instance
             return Zoom(auth, tokenStorage, meetings, users)

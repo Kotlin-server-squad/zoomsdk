@@ -54,6 +54,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+                implementation("io.ktor:ktor-client-mock:$ktor_version")
             }
         }
     }

@@ -2,13 +2,12 @@ package com.kss.zoom.module.auth
 
 import com.kss.zoom.client.ApiClient
 import com.kss.zoom.model.CallResult
-import com.kss.zoom.module.auth.Auth.Companion.FORM_URL_ENCODED_CONTENT_TYPE
 import com.kss.zoom.module.auth.model.AuthConfig
-import com.kss.zoom.module.auth.model.AuthResponse
-import com.kss.zoom.test.withMockClient
-import dev.mokkery.answering.returns
-import dev.mokkery.everySuspend
-import dev.mokkery.mock
+import com.kss.zoom.test.*
+import io.ktor.client.engine.mock.*
+import io.ktor.http.*
+import io.ktor.http.content.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,26 +35,28 @@ class DefaultAuthTest {
 
     @Test
     fun `should exchange authorization code for user tokens`() = runTest {
-        withMockClient(
-            mockClient = mock {
-                everySuspend {
-                    post<AuthResponse>(
-                        url = "${config.baseUrl}/oauth/token",
-                        clientId = config.clientId,
-                        clientSecret = config.clientSecret,
-                        contentType = FORM_URL_ENCODED_CONTENT_TYPE,
-                        body = null
-                    )
-                } returns CallResult.Success(
-                    AuthResponse(
-                        accessToken = "accessToken",
-                        refreshToken = "refreshToken",
-                        tokenType = "tokenType",
-                        expiresIn = 3600
-                    )
-                )
-            }
-        ) {
+        withMockClient(MockEngine { request ->
+            request.assertMethod(HttpMethod.Post)
+            request.assertUrl("${config.baseUrl}/oauth/token")
+            request.assertBasicAuth(config.clientId, config.clientSecret)
+            request.assertContentType(ContentType.Application.FormUrlEncoded)
+            request.assertBody()
+
+            respond(
+                content = ByteReadChannel(
+                    """
+                    {
+                        "access_token": "accessToken",
+                        "refresh_token": "refreshToken",
+                        "token_type": "tokenType",
+                        "expires_in": 3600
+                    }
+                """.trimIndent()
+                ),
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
+            )
+        }) {
             when (val result = auth(it).authorize("code")) {
                 is CallResult.Success -> {
                     val userTokens = result.data
@@ -72,24 +73,31 @@ class DefaultAuthTest {
 
     @Test
     fun `should refresh user authorization`() = runTest {
-        withMockClient(
-            mockClient = mock {
-                everySuspend {
-                    post<AuthResponse>(
-                        url = "${config.baseUrl}/oauth/token",
-                        body = "grant_type=refresh_token&refresh_token=refreshToken",
-                        contentType = FORM_URL_ENCODED_CONTENT_TYPE,
-                    )
-                } returns CallResult.Success(
-                    AuthResponse(
-                        accessToken = "newAccessToken",
-                        refreshToken = "newRefreshToken",
-                        tokenType = "tokenType",
-                        expiresIn = 3600
-                    )
+        withMockClient(MockEngine { request ->
+            request.assertMethod(HttpMethod.Post)
+            request.assertUrl("${config.baseUrl}/oauth/token")
+            request.assertContentType(ContentType.Application.FormUrlEncoded)
+            request.assertBody(
+                TextContent(
+                    "grant_type=refresh_token&refresh_token=refreshToken",
+                    ContentType.Application.FormUrlEncoded
                 )
-            }
-        ) {
+            )
+            respond(
+                content = ByteReadChannel(
+                    """
+                    {
+                        "access_token": "newAccessToken",
+                        "refresh_token": "newRefreshToken",
+                        "token_type": "tokenType",
+                        "expires_in": 3600
+                    }
+                """.trimIndent()
+                ),
+                status = HttpStatusCode.OK,
+                headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
+            )
+        }) {
             when (val result = auth(it).reauthorize("refreshToken")) {
                 is CallResult.Success -> {
                     val userTokens = result.data

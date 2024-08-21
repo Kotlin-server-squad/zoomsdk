@@ -3,20 +3,18 @@ package com.kss.zoom.module.meetings
 import com.kss.zoom.client.ApiClient
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
+import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
-import com.kss.zoom.module.meetings.model.CreateRequest
-import com.kss.zoom.module.meetings.model.DeleteRequest
-import com.kss.zoom.module.meetings.model.GetRequest
-import com.kss.zoom.module.meetings.model.UpdateRequest
+import com.kss.zoom.module.meetings.model.*
 import com.kss.zoom.module.meetings.model.api.MeetingResponse
 import com.kss.zoom.module.meetings.model.api.toModel
-import com.kss.zoom.test.testClock
-import com.kss.zoom.test.withMockClient
-import dev.mokkery.answering.calls
+import com.kss.zoom.test.*
 import dev.mokkery.answering.returns
 import dev.mokkery.everySuspend
-import dev.mokkery.matcher.any
 import dev.mokkery.mock
+import io.ktor.client.engine.mock.*
+import io.ktor.http.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.TimeZone
 import kotlin.test.Test
@@ -48,29 +46,24 @@ class DefaultMeetingsTest {
 
     @Test
     fun `should create a meeting`() = runTest {
+        val createRequest = CreateRequest(
+            userId = USER_ID,
+            topic = "topic",
+            startTime = testClock.plus(1.minutes),
+            duration = 60,
+            timezone = TimeZone.UTC
+        )
         withMockClient(
-            mockClient = mock {
-                everySuspend {
-                    post<MeetingResponse>(
-                        path = "/meetings",
-                        token = ACCESS_TOKEN,
-                        contentType = "application/json",
-                        body = any()
-                    )
-                } calls { _ ->
-                    CallResult.Success(meetingResponse)
-                }
+            MockEngine { request ->
+                request.assertMethod(HttpMethod.Post)
+                request.assertUrl("https://api.zoom.us/v2/meetings")
+                request.assertBearerAuth(ACCESS_TOKEN)
+                request.assertContentType(ContentType.Application.Json)
+                request.assertBodyAsJson(createRequest.toApi().toJson())
+                respondJson(meetingResponse.toJson())
             }
         ) {
-            when (val result = meetings(it).create(
-                CreateRequest(
-                    userId = USER_ID,
-                    topic = "topic",
-                    startTime = testClock.plus(1.minutes),
-                    duration = 60,
-                    timezone = TimeZone.UTC
-                )
-            )) {
+            when (val result = meetings(it).create(createRequest)) {
                 is CallResult.Success -> {
                     assertEquals(meetingResponse.toModel(), result.data, "Meeting should be equal")
                 }
@@ -97,18 +90,27 @@ class DefaultMeetingsTest {
             timezone = updateRequest.timezone?.id!!
         )
         withMockClient(
-            mockClient = mock {
-                everySuspend {
-                    patch<Unit>(
-                        path = "/meetings/$MEETING_ID",
-                        token = ACCESS_TOKEN,
-                        contentType = "application/json",
-                        body = any()
-                    )
-                } returns CallResult.Success(Unit)
-                everySuspend {
-                    get<MeetingResponse>("meetings/$MEETING_ID", ACCESS_TOKEN)
-                } returns CallResult.Success(expectedMeetingResponse)
+            MockEngine { request ->
+                when (request.method) {
+                    HttpMethod.Patch -> {
+                        request.assertUrl("https://api.zoom.us/v2/meetings/$MEETING_ID")
+                        request.assertBearerAuth(ACCESS_TOKEN)
+                        request.assertContentType(ContentType.Application.Json)
+                        request.assertBodyAsJson(updateRequest.toApi().toJson())
+                        respondJson(expectedMeetingResponse.toJson())
+                    }
+                    HttpMethod.Get -> {
+                        request.assertUrl("https://api.zoom.us/v2/meetings/$MEETING_ID")
+                        request.assertBearerAuth(ACCESS_TOKEN)
+
+                        respond(
+                            content = ByteReadChannel(expectedMeetingResponse.toJson()),
+                            status = HttpStatusCode.OK,
+                            headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
+                        )
+                    }
+                    else -> fail("Unexpected request: $request")
+                }
             }
         ) {
             meetings(it).update(updateRequest).let { result ->
@@ -126,10 +128,11 @@ class DefaultMeetingsTest {
     @Test
     fun `should get meeting details`() = runTest {
         withMockClient(
-            mockClient = mock {
-                everySuspend {
-                    get<MeetingResponse>("meetings/1", ACCESS_TOKEN)
-                } returns CallResult.Success(meetingResponse)
+            MockEngine { request ->
+                request.assertMethod(HttpMethod.Get)
+                request.assertUrl("https://api.zoom.us/v2/meetings/1")
+                request.assertBearerAuth(ACCESS_TOKEN)
+                respondJson(meetingResponse.toJson())
             }
         ) {
             meetings(it).get(GetRequest(userId = USER_ID, meetingId = "1")).let { result ->
@@ -147,10 +150,10 @@ class DefaultMeetingsTest {
     @Test
     fun `should delete meeting`() = runTest {
         withMockClient(
-            mockClient = mock {
-                everySuspend {
-                    delete<MeetingResponse>("meetings/1", ACCESS_TOKEN)
-                } returns CallResult.Success(meetingResponse)
+            MockEngine { request ->
+                request.assertMethod(HttpMethod.Delete)
+                request.assertBearerAuth(ACCESS_TOKEN)
+                respondJson(meetingResponse.toJson())
             }
         ) {
             meetings(it).delete(DeleteRequest(userId = USER_ID, meetingId = "1")).let { result ->
@@ -188,6 +191,6 @@ class DefaultMeetingsTest {
             everySuspend { getAccessToken(USER_ID) } returns ACCESS_TOKEN
         },
     ): DefaultMeetings {
-        return DefaultMeetings(auth, storage, testClock, client)
+        return DefaultMeetings(ZoomModuleConfig(), auth, storage, testClock, client)
     }
 }
