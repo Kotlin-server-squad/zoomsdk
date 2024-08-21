@@ -99,6 +99,7 @@ class DefaultMeetingsTest {
                         request.assertBodyAsJson(updateRequest.toApi().toJson())
                         respondJson(expectedMeetingResponse.toJson())
                     }
+
                     HttpMethod.Get -> {
                         request.assertUrl("https://api.zoom.us/v2/meetings/$MEETING_ID")
                         request.assertBearerAuth(ACCESS_TOKEN)
@@ -109,6 +110,7 @@ class DefaultMeetingsTest {
                             headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
                         )
                     }
+
                     else -> fail("Unexpected request: $request")
                 }
             }
@@ -168,10 +170,9 @@ class DefaultMeetingsTest {
         }
     }
 
-    // TODO verify CallResult.Error
-//    @Test
+    @Test
     fun `should not accept an invalid request to create a meeting`() = runTest {
-        withMockClient {
+        withMockClient{
             meetings(it).create(
                 CreateRequest(
                     userId = USER_ID,
