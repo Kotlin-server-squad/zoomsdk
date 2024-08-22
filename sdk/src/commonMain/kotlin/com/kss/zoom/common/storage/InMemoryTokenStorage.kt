@@ -17,7 +17,13 @@ class InMemoryTokenStorage(config: InMemoryTokenStorageConfig = InMemoryTokenSto
         .expireAfterWrite(config.accessTokenExpiry)
         .build()
 
-    override suspend fun saveTokens(userId: String, userTokens: UserTokens): Unit = withContext(ioContext) {
+    // Access tokens expire after 1 hour
+    // https://developers.zoom.us/docs/internal-apps/s2s-oauth/#generate-access-token
+    private val accountAccessTokenCache = Cache.Builder<String, String>()
+        .expireAfterWrite(config.accessTokenExpiry)
+        .build()
+
+    override suspend fun saveUserTokens(userId: String, userTokens: UserTokens): Unit = withContext(ioContext) {
         coroutineScope {
             launch { refreshTokenCache.put(userId, userTokens.refreshToken) }
             launch { accessTokenCache.put(userTokens.refreshToken, userTokens.accessToken) }
@@ -39,5 +45,13 @@ class InMemoryTokenStorage(config: InMemoryTokenStorageConfig = InMemoryTokenSto
             accessTokenCache.invalidate(refreshToken)
         }
         refreshTokenCache.invalidate(userId)
+    }
+
+    override suspend fun saveAccountToken(accountId: String, accessToken: String): Unit = withContext(ioContext) {
+        accountAccessTokenCache.put(accountId, accessToken)
+    }
+
+    override suspend fun getAccountAccessToken(accountId: String): String? = withContext(ioContext) {
+        accountAccessTokenCache.get(accountId)
     }
 }

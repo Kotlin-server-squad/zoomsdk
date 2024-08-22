@@ -3,14 +3,15 @@ package com.kss.zoom
 import com.kss.zoom.client.ApiClient
 import com.kss.zoom.common.call
 import com.kss.zoom.common.extensions.coroutines.map
-import com.kss.zoom.common.notBlank
 import com.kss.zoom.common.storage.InMemoryTokenStorage
 import com.kss.zoom.common.storage.TokenStorage
+import com.kss.zoom.common.tryCall
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.auth.DefaultAuth
 import com.kss.zoom.module.auth.model.AuthConfig
+import com.kss.zoom.module.auth.model.UserTokens
 import com.kss.zoom.module.meetings.DefaultMeetings
 import com.kss.zoom.module.meetings.Meetings
 import com.kss.zoom.module.meetings.model.GetRequest
@@ -32,7 +33,7 @@ class Zoom private constructor(
     suspend fun authorize(userId: String, code: String): CallResult<Unit> {
         return auth.authorize(code).map {
             // Save the user ID and tokens
-            tokenStorage.saveTokens(userId, it)
+            tokenStorage.saveUserTokens(userId, it)
         }
     }
 
@@ -40,8 +41,18 @@ class Zoom private constructor(
         val refreshToken = tokenStorage.getRefreshToken(userId)
             ?: return CallResult.Error("No refresh token found for user $userId")
         return auth.reauthorize(refreshToken).map {
-            tokenStorage.saveTokens(userId, it)
+            tokenStorage.saveUserTokens(userId, it)
         }
+    }
+
+    suspend fun registerUser(userId: String, accessToken: String, refreshToken: String): CallResult<Unit> {
+        return tryCall {
+            // Save the user ID and tokens
+            CallResult.Success(
+                tokenStorage.saveUserTokens(userId, UserTokens(accessToken, refreshToken))
+            )
+        }
+
     }
 
     fun meetings(): Meetings = meetings
@@ -52,17 +63,19 @@ class Zoom private constructor(
         fun create(
             clientId: String,
             clientSecret: String,
+            accountId: String,
             client: ApiClient = ApiClient.DEFAULT,
             tokenStorage: TokenStorage = InMemoryTokenStorage(),
             clock: Clock = Clock.System,
         ): Zoom {
-            // Validate input
-            clientId.notBlank("clientId")
-            clientSecret.notBlank("clientSecret")
+            // Identify the account the SDK is working with
+            // The account must have scopes necessary to perform all the operations required by the supported Zoom API calls
+            val authConfig = AuthConfig(clientId, clientSecret, accountId)
 
-            val auth = DefaultAuth(AuthConfig(clientId, clientSecret), client)
+            // Create Auth module for authentication / authorization
+            val auth = DefaultAuth(authConfig, client)
 
-            // Create modules
+            // Create modules to work with Zoom API
             val moduleConfig = ZoomModuleConfig()
             val meetings = DefaultMeetings(moduleConfig, auth, tokenStorage, clock, client)
             val users = DefaultUsers(moduleConfig, auth, tokenStorage, clock, client)
@@ -76,8 +89,11 @@ class Zoom private constructor(
 // TODO move to README
 fun main(): Unit = runBlocking {
     // Instantiate the SDK
-    val zoom = Zoom.create("clientId", "clientSecret")
+    val zoom = Zoom.create("clientId", "clientSecret", "accountId")
 
+    /**
+     * OAuth2 flow: Requires user interaction
+     */
     // Helper method to get Zoom authorization URL
     val authUrl = zoom.getAuthorizationUrl("callbackUrl")
     println("Use $authUrl in the client code to obtain an authorization code")
@@ -91,6 +107,17 @@ fun main(): Unit = runBlocking {
     // We can refresh the authorization for a particular user
     zoom.reauthorize("userId1")
 
+    // Alternatively, we can register a user with their access and refresh tokens
+    zoom.registerUser("userId4", "accessToken4", "refreshToken4")
+
+    /**
+     * Server-to-server flow: No user interaction required
+     */
+    // This is implicitly done by the SDK, if no user pair of access and refresh tokens is provided
+
+    /**
+     * Accessing the Zoom API
+     */
     // Use the Zoom instance to access the Zoom API
     val meetings = zoom.meetings()
     val users = zoom.users()

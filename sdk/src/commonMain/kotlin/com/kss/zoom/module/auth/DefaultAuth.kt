@@ -4,15 +4,15 @@ import com.kss.zoom.client.ApiClient
 import com.kss.zoom.common.extensions.map
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.module.auth.Auth.Companion.FORM_URL_ENCODED_CONTENT_TYPE
-import com.kss.zoom.module.auth.model.AuthConfig
-import com.kss.zoom.module.auth.model.AuthResponse
-import com.kss.zoom.module.auth.model.UserTokens
-import com.kss.zoom.module.auth.model.toUserTokens
+import com.kss.zoom.module.auth.model.*
 import io.ktor.http.*
 
 class DefaultAuth(private val config: AuthConfig, private val client: ApiClient) : Auth {
 
     private val oauthTokenUrl = "${config.baseUrl}/oauth/token"
+
+    override val accountId: String
+        get() = config.accountId
 
     override fun getAuthorizationUrl(callbackUrl: String): String {
         return URLBuilder().apply {
@@ -26,7 +26,7 @@ class DefaultAuth(private val config: AuthConfig, private val client: ApiClient)
     }
 
     override suspend fun authorize(code: String): CallResult<UserTokens> {
-        return client.post<AuthResponse>(
+        return client.post<UserAuthResponse>(
             url = oauthTokenUrl,
             clientId = config.clientId,
             clientSecret = config.clientSecret,
@@ -36,10 +36,20 @@ class DefaultAuth(private val config: AuthConfig, private val client: ApiClient)
     }
 
     override suspend fun reauthorize(refreshToken: String): CallResult<UserTokens> {
-        return client.post<AuthResponse>(
+        return client.post<UserAuthResponse>(
             url = oauthTokenUrl,
             body = "grant_type=refresh_token&refresh_token=${refreshToken}",
             contentType = FORM_URL_ENCODED_CONTENT_TYPE
         ).map { it.toUserTokens() }
+    }
+
+    override suspend fun authorizeAccount(): CallResult<AccountToken> {
+        return client.post<AccountAuthResponse>(
+            url = oauthTokenUrl,
+            clientId = config.clientId,
+            clientSecret = config.clientSecret,
+            contentType = FORM_URL_ENCODED_CONTENT_TYPE,
+            body = "grant_type=account_credentials&account_id=${config.accountId}"
+        ).map { it.toAccountToken() }
     }
 }

@@ -35,16 +35,31 @@ abstract class ZoomModuleBase(
                 return@tryCall block(it)
             }
             val refreshToken = tokenStorage.getRefreshToken(request.userId)
-                ?: return@tryCall CallResult.Error("Neither access nor refresh token found for ${request.userId}")
+                ?: run {
+                    // Server-to-server authorization using app credentials. The access token is valid for 1 hour.
+                    return@tryCall withAccountAccessToken { block(it) }
+                }
 
             auth.reauthorize(refreshToken).map {
-                tokenStorage.saveTokens(request.userId, it)
+                tokenStorage.saveUserTokens(request.userId, it)
                 it.accessToken
             }.flatMap {
                 block(it)
             }
         }
+    }
 
-
+    private suspend fun <T> withAccountAccessToken(
+        block: suspend (String) -> CallResult<T>,
+    ): CallResult<T> {
+        return tryCall {
+            tokenStorage.getAccountAccessToken(auth.accountId)?.let {
+                return@tryCall block(it)
+            }
+            auth.authorizeAccount().map { accountToken ->
+                tokenStorage.saveAccountToken(auth.accountId, accountToken.accessToken)
+                accountToken.accessToken
+            }.flatMap { block(it) }
+        }
     }
 }

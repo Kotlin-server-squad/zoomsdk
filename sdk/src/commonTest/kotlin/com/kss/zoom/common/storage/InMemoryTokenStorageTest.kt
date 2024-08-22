@@ -19,10 +19,7 @@ class InMemoryTokenStorageTest {
         private val config = InMemoryTokenStorageConfig(accessTokenExpiry = 1.seconds)
         private val userTokens = UserTokens(
             accessToken = "access1",
-            refreshToken = "refresh1",
-            tokenType = "Bearer",
-            expiresIn = 3600,
-            createdAt = 0
+            refreshToken = "refresh1"
         )
     }
 
@@ -38,14 +35,14 @@ class InMemoryTokenStorageTest {
 
     @Test
     fun `should store user tokens`() = runTest {
-        storage.saveTokens(USER_ID, userTokens)
+        storage.saveUserTokens(USER_ID, userTokens)
         assertEquals(storage.getAccessToken(USER_ID), userTokens.accessToken, "Should be equal")
         assertEquals(storage.getRefreshToken(USER_ID), userTokens.refreshToken, "Should be equal")
     }
 
     @Test
     fun `should delete user tokens`() = runTest {
-        storage.saveTokens(USER_ID, userTokens)
+        storage.saveUserTokens(USER_ID, userTokens)
         storage.deleteTokens(USER_ID)
         assertNull(storage.getAccessToken(USER_ID), "Should be null")
         assertNull(storage.getRefreshToken(USER_ID), "Should be null")
@@ -53,7 +50,7 @@ class InMemoryTokenStorageTest {
 
     @Test
     fun `access token should expire`() = runBlocking {
-        storage.saveTokens(USER_ID, userTokens)
+        storage.saveUserTokens(USER_ID, userTokens)
         assertEquals(storage.getAccessToken(USER_ID), userTokens.accessToken, "Should be equal")
         delay(config.accessTokenExpiry + 1.seconds)
         assertNull(storage.getAccessToken(USER_ID), "Should be null")

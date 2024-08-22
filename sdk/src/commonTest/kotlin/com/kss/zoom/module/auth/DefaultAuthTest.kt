@@ -18,7 +18,8 @@ class DefaultAuthTest {
     companion object {
         private val config = AuthConfig(
             clientId = "clientId",
-            clientSecret = "clientSecret"
+            clientSecret = "clientSecret",
+            accountId = "accountId",
         )
     }
 
@@ -62,8 +63,6 @@ class DefaultAuthTest {
                     val userTokens = result.data
                     assertEquals("accessToken", userTokens.accessToken, "Access token should be equal")
                     assertEquals("refreshToken", userTokens.refreshToken, "Refresh token should be equal")
-                    assertEquals("tokenType", userTokens.tokenType, "Token type should be equal")
-                    assertEquals(3600, userTokens.expiresIn, "Expires in should be equal")
                 }
 
                 else -> fail("Unexpected result: $result")
@@ -103,8 +102,6 @@ class DefaultAuthTest {
                     val userTokens = result.data
                     assertEquals("newAccessToken", userTokens.accessToken, "Access token should be equal")
                     assertEquals("newRefreshToken", userTokens.refreshToken, "Refresh token should be equal")
-                    assertEquals("tokenType", userTokens.tokenType, "Token type should be equal")
-                    assertEquals(3600, userTokens.expiresIn, "Expires in should be equal")
                 }
 
                 else -> fail("Unexpected result: $result")

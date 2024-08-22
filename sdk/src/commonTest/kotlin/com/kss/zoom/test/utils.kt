@@ -6,6 +6,7 @@ import io.ktor.client.engine.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 
 val testClock = TestClock()
 
@@ -17,7 +18,11 @@ suspend fun <T> withMockClient(
 ) {
     val httpClient = HttpClient(engine) {
         install(ContentNegotiation) {
-            json()
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                }
+            )
         }
     }
     block(ApiClient(httpClient))
