@@ -12,28 +12,30 @@ data class MeetingResponse(
     val topic: String,
     val duration: Short,
     @SerialName("host_id") val hostId: String,
-    @SerialName("host_email") val hostEmail: String,
-    val status: String,
+    @SerialName("host_email") val hostEmail: String? = null,
+    val status: String? = null,
     @SerialName("start_time") val startTime: String,
     val timezone: String,
     @SerialName("created_at") val createdAt: String,
-    @SerialName("start_url") val startUrl: String,
+    @SerialName("start_url") val startUrl: String? = null,
     @SerialName("join_url") val joinUrl: String,
-    val password: String,
+    val password: String? = null,
 )
 
 fun MeetingResponse.toModel(): Meeting {
     return Meeting(
         id = id.toString(),
         uuid = uuid,
-        hostId = hostId,
         topic = topic,
+        duration = duration,
+        hostId = hostId,
         createdAt = createdAt.toTimestamp(),
         startTime = startTime.toTimestamp(),
-        duration = duration,
         timezone = timezone,
-        startUrl = startUrl,
         joinUrl = joinUrl,
+        status = status,
+        hostEmail = hostEmail,
+        startUrl = startUrl,
         password = password
     )
 }

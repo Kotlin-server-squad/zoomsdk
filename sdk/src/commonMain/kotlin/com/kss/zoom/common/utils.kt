@@ -22,4 +22,10 @@ suspend fun <T> tryCall(block: suspend () -> CallResult<T>): CallResult<T> {
     }
 }
 
+fun getPropertyOrThrow(name: String): String {
+    return getProperty(name) ?: throw IllegalStateException("Property $name not set")
+}
+
 expect fun currentTimeMillis(): Long
+
+expect fun getProperty(name: String): String?

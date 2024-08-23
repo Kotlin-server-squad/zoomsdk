@@ -1,5 +1,7 @@
 package com.kss.zoom.module.meetings.model
 
+import com.kss.zoom.common.extensions.id
+import com.kss.zoom.common.extensions.toDateTimeString
 import com.kss.zoom.common.greaterZero
 import com.kss.zoom.common.isInFuture
 import com.kss.zoom.common.notBlank
@@ -31,7 +33,7 @@ fun CreateRequest.toApi(): MeetingRequest =
     MeetingRequest(
         topic = topic,
         type = 2,
-        startTime = startTime.toString(),
+        startTime = startTime.toDateTimeString(),
         duration = duration,
-        timezone = timezone.id
+        timezone = timezone.id()
     )

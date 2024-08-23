@@ -34,7 +34,7 @@ data class UpdateRequest(
 
 fun UpdateRequest.toApi(): UpdateMeetingRequest {
     return UpdateMeetingRequest(
-        agenda = topic,
+        topic = topic,
         startTime = startTime?.toString(),
         duration = duration,
         timezone = timezone?.id

@@ -30,7 +30,7 @@ class DefaultMeetings(
     override suspend fun create(request: CreateRequest): CallResult<Meeting> =
         withAccessToken(request) { token ->
             client.post<MeetingResponse>(
-                url = url("/meetings"),
+                url = url("/users/${request.userId}/meetings"),
                 token = token,
                 contentType = "application/json",
                 body = request.toApi()
@@ -58,9 +58,9 @@ class DefaultMeetings(
         client.get<MeetingResponse>(url("/meetings/${request.meetingId}"), token).map { it.toModel() }
     }
 
-    override suspend fun delete(request: DeleteRequest): CallResult<Meeting> =
+    override suspend fun delete(request: DeleteRequest): CallResult<Unit> =
         withAccessToken(request) { token ->
-            client.delete<MeetingResponse>(url("/meetings/${request.meetingId}"), token).map { it.toModel() }
+            client.delete<Unit>(url("/meetings/${request.meetingId}"), token)
         }
 
     override suspend fun deleteAll(request: DeleteAllRequest): CallResult<Int> =

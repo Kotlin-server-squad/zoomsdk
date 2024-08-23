@@ -56,7 +56,7 @@ class DefaultMeetingsTest {
         withMockClient(
             MockEngine { request ->
                 request.assertMethod(HttpMethod.Post)
-                request.assertUrl("https://api.zoom.us/v2/meetings")
+                request.assertUrl("https://api.zoom.us/v2/users/${USER_ID}/meetings")
                 request.assertBearerAuth(ACCESS_TOKEN)
                 request.assertContentType(ContentType.Application.Json)
                 request.assertBodyAsJson(createRequest.toApi().toJson())
@@ -97,7 +97,7 @@ class DefaultMeetingsTest {
                         request.assertBearerAuth(ACCESS_TOKEN)
                         request.assertContentType(ContentType.Application.Json)
                         request.assertBodyAsJson(updateRequest.toApi().toJson())
-                        respondJson(expectedMeetingResponse.toJson())
+                        respondOk()
                     }
 
                     HttpMethod.Get -> {
@@ -161,7 +161,7 @@ class DefaultMeetingsTest {
             meetings(it).delete(DeleteRequest(userId = USER_ID, meetingId = "1")).let { result ->
                 when (result) {
                     is CallResult.Success -> {
-                        assertEquals(meetingResponse.toModel(), result.data, "Meeting should be equal")
+                        // No data to assert
                     }
 
                     else -> fail("Unexpected result: $result")

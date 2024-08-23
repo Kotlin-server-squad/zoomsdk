@@ -9,7 +9,7 @@ interface Meetings : ZoomModule {
     suspend fun create(request: CreateRequest): CallResult<Meeting>
     suspend fun update(request: UpdateRequest): CallResult<Meeting>
     suspend fun get(request: GetRequest): CallResult<Meeting>
-    suspend fun delete(request: DeleteRequest): CallResult<Meeting>
+    suspend fun delete(request: DeleteRequest): CallResult<Unit>
     suspend fun deleteAll(request: DeleteAllRequest): CallResult<Int>
     suspend fun list(request: ListRequest): CallResult<Page<Meeting>>
 }

@@ -145,7 +145,7 @@ fun MeetingRequest.toJson(): String =
 fun UpdateMeetingRequest.toJson(): String =
     """
         {
-            "agenda": "$agenda",
+            "topic": "$topic",
             "start_time": "$startTime",
             "duration": $duration,
             "timezone": "$timezone"
