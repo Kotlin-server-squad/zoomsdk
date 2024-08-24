@@ -1,4 +1,4 @@
-package com.kss.zoom.integrationtest
+package com.kss.zoom.test.integration
 
 import com.kss.zoom.Zoom
 import com.kss.zoom.common.call
@@ -13,9 +13,7 @@ import kotlinx.datetime.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.minutes
 
-// TODO Enable this test as integration tests only, run in CI/CD pipeline once a day or so
-@Ignore
-class DefaultMeetingsIntegrationTest : ZoomIntegrationTest() {
+class DefaultMeetingsTest : ZoomModuleTest() {
 
     private lateinit var meetings: Meetings
 

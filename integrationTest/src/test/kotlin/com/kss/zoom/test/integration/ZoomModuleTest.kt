@@ -1,11 +1,9 @@
-package com.kss.zoom.integrationtest
+package com.kss.zoom.test.integration
 
 import com.kss.zoom.Zoom
-import com.kss.zoom.common.getPropertyOrThrow
 import kotlin.test.BeforeTest
 
-abstract class ZoomIntegrationTest {
-
+abstract class ZoomModuleTest {
     private lateinit var zoom: Zoom
 
     protected abstract fun setUp(zoom: Zoom)
@@ -23,4 +21,7 @@ abstract class ZoomIntegrationTest {
         setUp(zoom)
     }
 
+    private fun getPropertyOrThrow(key: String): String {
+        return System.getenv(key) ?: throw IllegalArgumentException("Missing required property: $key")
+    }
 }

@@ -185,6 +185,11 @@ class DefaultMeetingsTest {
         }
     }
 
+    @Test
+    fun `should fly`() {
+
+    }
+
     private fun meetings(
         client: ApiClient,
         auth: Auth = mock {},
