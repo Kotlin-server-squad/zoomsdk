@@ -25,6 +25,11 @@ jobs:
           - target: integrationTest
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
+    env:
+      ZOOM_CLIENT_ID: ${{ secrets.ZOOM_CLIENT_ID }}
+      ZOOM_CLIENT_SECRET: ${{ secrets.ZOOM_CLIENT_SECRET }}
+      ZOOM_ACCOUNT_ID: ${{ secrets.ZOOM_ACCOUNT_ID }}
+      ZOOM_USER_ID: ${{ secrets.ZOOM_USER_ID }}
 
     steps:
     - uses: actions/checkout@v3
