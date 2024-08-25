@@ -18,34 +18,27 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - target: integrationTest
-            os: ubuntu-latest
-    runs-on: ${{ matrix.os }}
-    env:
-      ZOOM_CLIENT_ID: ${{ secrets.ZOOM_CLIENT_ID }}
-      ZOOM_CLIENT_SECRET: ${{ secrets.ZOOM_CLIENT_SECRET }}
-      ZOOM_ACCOUNT_ID: ${{ secrets.ZOOM_ACCOUNT_ID }}
-      ZOOM_USER_ID: ${{ secrets.ZOOM_USER_ID }}
-
+  test:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Validate Gradle Wrapper
-      uses: gradle/wrapper-validation-action@v1
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.konan
-        key: "${{ runner.os }}-${{ hashFiles('**/.lock') }}"
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-    - name: Build with Gradle
-      uses: gradle/gradle-build-action@ce999babab2de1c4b649dc15f0ee67e6246c994f
-      with:
-        arguments: ${{ matrix.target }}
+      - uses: actions/checkout@v3
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.konan
+          key: "${{ runner.os }}-${{ hashFiles('**/.lock') }}"
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Run Integration Tests
+        env:
+          ZOOM_CLIENT_ID: ${{ secrets.ZOOM_CLIENT_ID }}
+          ZOOM_CLIENT_SECRET: ${{ secrets.ZOOM_CLIENT_SECRET }}
+          ZOOM_ACCOUNT_ID: ${{ secrets.ZOOM_ACCOUNT_ID }}
+          ZOOM_USER_ID: ${{ secrets.ZOOM_USER_ID }}
+        run: |
+          ./gradlew :integrationTest:test
