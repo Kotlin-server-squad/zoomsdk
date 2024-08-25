@@ -5,13 +5,11 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Build with Gradle
+name: Run Integration Tests
 
 on:
-  push:
-    branches: [ "refactoring" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "refactoring" ]
   workflow_call:
 
 permissions:
@@ -22,15 +20,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: iosSimulatorArm64Test
-            os: macos-latest
-          - target: jvmTest
-            os: ubuntu-latest
-          - target: linuxX64Test
-            os: ubuntu-latest
-          - target: testDebugUnitTest
-            os: ubuntu-latest
-          - target: testReleaseUnitTest
+          - target: integrationTest
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
 
