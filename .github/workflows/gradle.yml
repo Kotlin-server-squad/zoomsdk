@@ -9,7 +9,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "refactoring" ]
   pull_request:
     branches: [ "main" ]
   workflow_call:
