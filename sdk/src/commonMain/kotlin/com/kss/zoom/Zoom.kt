@@ -126,6 +126,6 @@ fun main(): Unit = runBlocking {
     val meeting = call { meetings.get(GetRequest("userId1", "meetingId")) }
     println("Found meeting: $meeting")
 
-    val user = call { users.get("userId1") }
+    val user = call { users.get(com.kss.zoom.module.users.model.GetRequest("userId1")) }
     println("This is me: $user")
 }

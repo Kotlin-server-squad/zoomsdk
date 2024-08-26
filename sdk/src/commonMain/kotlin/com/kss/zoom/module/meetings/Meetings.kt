@@ -2,6 +2,7 @@ package com.kss.zoom.module.meetings
 
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.model.pagination.Page
+import com.kss.zoom.model.request.ListRequest
 import com.kss.zoom.module.ZoomModule
 import com.kss.zoom.module.meetings.model.*
 

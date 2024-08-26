@@ -4,7 +4,8 @@ import com.kss.zoom.Zoom
 import com.kss.zoom.common.call
 import com.kss.zoom.common.extensions.id
 import com.kss.zoom.model.CallResult
-import com.kss.zoom.model.pagination.PageRequest
+import com.kss.zoom.model.request.PageRequest
+import com.kss.zoom.model.request.ListRequest
 import com.kss.zoom.module.meetings.Meetings
 import com.kss.zoom.module.meetings.model.*
 import io.ktor.http.*

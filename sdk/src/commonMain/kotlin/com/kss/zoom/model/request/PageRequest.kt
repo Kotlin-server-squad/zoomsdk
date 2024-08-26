@@ -1,4 +1,4 @@
-package com.kss.zoom.model.pagination
+package com.kss.zoom.model.request
 
 import com.kss.zoom.common.greaterZero
 import com.kss.zoom.model.pagination.filter.PageFilter

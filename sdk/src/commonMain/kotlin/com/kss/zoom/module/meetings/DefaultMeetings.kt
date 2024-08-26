@@ -6,13 +6,14 @@ import com.kss.zoom.common.extensions.map
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.model.pagination.Page
-import com.kss.zoom.model.pagination.PageRequest
+import com.kss.zoom.model.pagination.PaginationObject
+import com.kss.zoom.model.request.ListRequest
+import com.kss.zoom.model.request.PageRequest
 import com.kss.zoom.module.ZoomModuleBase
 import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.meetings.model.*
 import com.kss.zoom.module.meetings.model.api.MeetingResponse
-import com.kss.zoom.module.meetings.model.api.PaginationObject
 import com.kss.zoom.module.meetings.model.api.toModel
 import com.kss.zoom.module.meetings.model.pagination.filter.MeetingType
 import com.kss.zoom.module.meetings.model.pagination.filter.MeetingTypeFilter
@@ -72,7 +73,7 @@ class DefaultMeetings(
                 StringBuilder("type=scheduled&page_number=${request.pageRequest.index}&page_size=${request.pageRequest.size}")
             request.pageRequest.filters.forEach { params.append("&${it.toQueryString()}") }
             request.pageRequest.nextPageToken?.let { params.append("&next_page_token=$it") }
-            client.get<PaginationObject>(
+            client.get<PaginationObject<MeetingResponse>>(
                 url = url("/users/${request.userId}/meetings?$params"),
                 token = token
             ).map { it.toModel() }
