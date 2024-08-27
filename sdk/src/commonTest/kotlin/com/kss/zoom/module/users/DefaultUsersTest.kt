@@ -1,13 +1,13 @@
-package com.kss.zoom.module.meetings
+package com.kss.zoom.module.users
 
 import com.kss.zoom.client.ApiClient
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
-import com.kss.zoom.module.meetings.model.*
-import com.kss.zoom.module.meetings.model.api.MeetingResponse
-import com.kss.zoom.module.meetings.model.api.toModel
+import com.kss.zoom.module.users.model.*
+import com.kss.zoom.module.users.model.api.UserResponse
+import com.kss.zoom.module.users.model.api.toModel
 import com.kss.zoom.test.*
 import dev.mokkery.answering.returns
 import dev.mokkery.everySuspend
@@ -16,56 +16,46 @@ import io.ktor.client.engine.mock.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.TimeZone
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
-import kotlin.time.Duration.Companion.minutes
 
-class DefaultMeetingsTest {
+class DefaultUsersTest {
+
     companion object {
-        private const val MEETING_ID = "userId"
         private const val USER_ID = "userId"
         private const val ACCESS_TOKEN = "accessToken"
-        private val meetingResponse = MeetingResponse(
-            id = 1,
-            uuid = "uuid",
-            topic = "topic",
-            duration = 60,
-            hostId = "hostId",
-            hostEmail = "hostEmail",
-            status = "status",
-            startTime = "2024-01-10T00:00:00Z",
-            createdAt = "2024-01-01T10:00:00Z",
-            timezone = "timezone",
-            startUrl = "startUrl",
-            joinUrl = "joinUrl",
-            password = "password"
+        private val userResponse = UserResponse(
+            id = USER_ID,
+            email = "email",
+            firstName = "firstName",
+            lastName = "lastName",
+            type = 1,
         )
     }
 
     @Test
-    fun `should create a meeting`() = runTest {
+    fun `should create a user`() = runTest {
         val createRequest = CreateRequest(
             userId = USER_ID,
-            topic = "topic",
-            startTime = testClock.plus(1.minutes),
-            duration = 60,
-            timezone = TimeZone.UTC
+            email = "email",
+            firstName = "John",
+            lastName = "Doe",
+            displayName = "John Doe",
         )
         withMockClient(
             MockEngine { request ->
                 request.assertMethod(HttpMethod.Post)
-                request.assertUrl("https://api.zoom.us/v2/users/${USER_ID}/meetings")
+                request.assertUrl("https://api.zoom.us/v2/users")
                 request.assertBearerAuth(ACCESS_TOKEN)
                 request.assertContentType(ContentType.Application.Json)
                 request.assertBodyAsJson(createRequest.toApi().toJson())
-                respondJson(meetingResponse.toJson())
+                respondJson(userResponse.toJson())
             }
         ) {
-            when (val result = meetings(it).create(createRequest)) {
+            when (val result = users(it).create(createRequest)) {
                 is CallResult.Success -> {
-                    assertEquals(meetingResponse.toModel(), result.data, "Meeting should be equal")
+                    assertEquals(userResponse.toModel(), result.data, "User should be equal")
                 }
 
                 else -> fail("Unexpected result: $result")
@@ -74,26 +64,23 @@ class DefaultMeetingsTest {
     }
 
     @Test
-    fun `should update a meeting`() = runTest {
+    fun `should update a user`() = runTest {
         val updateRequest = UpdateRequest(
             userId = USER_ID,
-            meetingId = MEETING_ID,
-            topic = "updatedTopic",
-            startTime = testClock.plus(1.minutes),
-            duration = 1200,
-            timezone = TimeZone.UTC
+            firstName = "Travis",
+            lastName = "Foe",
+            company = "cOmPaNy",
         )
-        val expectedMeetingResponse = meetingResponse.copy(
-            topic = updateRequest.topic!!,
-            startTime = updateRequest.startTime?.let { testClock.toIsoString(it) }!!,
-            duration = updateRequest.duration!!,
-            timezone = updateRequest.timezone?.id!!
+        val expectedUserResponse = userResponse.copy(
+            firstName = updateRequest.firstName!!,
+            lastName = updateRequest.lastName!!,
+            company = updateRequest.company,
         )
         withMockClient(
             MockEngine { request ->
                 when (request.method) {
                     HttpMethod.Patch -> {
-                        request.assertUrl("https://api.zoom.us/v2/meetings/$MEETING_ID")
+                        request.assertUrl("https://api.zoom.us/v2/users/$USER_ID")
                         request.assertBearerAuth(ACCESS_TOKEN)
                         request.assertContentType(ContentType.Application.Json)
                         request.assertBodyAsJson(updateRequest.toApi().toJson())
@@ -101,11 +88,11 @@ class DefaultMeetingsTest {
                     }
 
                     HttpMethod.Get -> {
-                        request.assertUrl("https://api.zoom.us/v2/meetings/$MEETING_ID")
+                        request.assertUrl("https://api.zoom.us/v2/users/$USER_ID")
                         request.assertBearerAuth(ACCESS_TOKEN)
 
                         respond(
-                            content = ByteReadChannel(expectedMeetingResponse.toJson()),
+                            content = ByteReadChannel(expectedUserResponse.toJson()),
                             status = HttpStatusCode.OK,
                             headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
                         )
@@ -115,10 +102,10 @@ class DefaultMeetingsTest {
                 }
             }
         ) {
-            meetings(it).update(updateRequest).let { result ->
+            users(it).update(updateRequest).let { result ->
                 when (result) {
                     is CallResult.Success -> {
-                        assertEquals(expectedMeetingResponse.toModel(), result.data, "Meeting should be equal")
+                        assertEquals(expectedUserResponse.toModel(), result.data, "User should be equal")
                     }
 
                     else -> fail("Unexpected result: $result")
@@ -128,19 +115,19 @@ class DefaultMeetingsTest {
     }
 
     @Test
-    fun `should get meeting details`() = runTest {
+    fun `should get user details`() = runTest {
         withMockClient(
             MockEngine { request ->
                 request.assertMethod(HttpMethod.Get)
-                request.assertUrl("https://api.zoom.us/v2/meetings/1")
+                request.assertUrl("https://api.zoom.us/v2/users/$USER_ID")
                 request.assertBearerAuth(ACCESS_TOKEN)
-                respondJson(meetingResponse.toJson())
+                respondJson(userResponse.toJson())
             }
         ) {
-            meetings(it).get(GetRequest(userId = USER_ID, meetingId = "1")).let { result ->
+            users(it).get(GetRequest(userId = USER_ID)).let { result ->
                 when (result) {
                     is CallResult.Success -> {
-                        assertEquals(meetingResponse.toModel(), result.data, "Meeting should be equal")
+                        assertEquals(userResponse.toModel(), result.data, "User should be equal")
                     }
 
                     else -> fail("Unexpected result: $result")
@@ -150,7 +137,7 @@ class DefaultMeetingsTest {
     }
 
     @Test
-    fun `should delete meeting`() = runTest {
+    fun `should delete user`() = runTest {
         withMockClient(
             MockEngine { request ->
                 request.assertMethod(HttpMethod.Delete)
@@ -158,7 +145,7 @@ class DefaultMeetingsTest {
                 respondOk()
             }
         ) {
-            meetings(it).delete(DeleteRequest(userId = USER_ID, meetingId = "1")).let { result ->
+            users(it).delete(DeleteRequest(userId = USER_ID)).let { result ->
                 when (result) {
                     is CallResult.Success -> {
                         // No data to assert
@@ -170,28 +157,13 @@ class DefaultMeetingsTest {
         }
     }
 
-    @Test
-    fun `should not accept an invalid request to create a meeting`() = runTest {
-        withMockClient{
-            meetings(it).create(
-                CreateRequest(
-                    userId = USER_ID,
-                    topic = "topic",
-                    startTime = testClock.minus(1.minutes), // Invalid start date!
-                    duration = 60,
-                    timezone = TimeZone.UTC
-                )
-            )
-        }
-    }
-
-    private fun meetings(
+    private fun users(
         client: ApiClient,
         auth: Auth = mock {},
         storage: TokenStorage = mock {
             everySuspend { getAccessToken(USER_ID) } returns ACCESS_TOKEN
         },
-    ): DefaultMeetings {
-        return DefaultMeetings(ZoomModuleConfig(), auth, storage, testClock, client)
+    ): DefaultUsers {
+        return DefaultUsers(ZoomModuleConfig(), auth, storage, testClock, client)
     }
 }

@@ -9,8 +9,6 @@ suspend inline fun <reified T> tryHttpCall(crossinline block: suspend () -> Http
     return tryCall {
         val response = block()
         if (response.status.value in 200..299) {
-            println("Response BODY")
-            println(response.bodyAsText())
             CallResult.Success(response.body())
         } else {
             when (response.status.value) {

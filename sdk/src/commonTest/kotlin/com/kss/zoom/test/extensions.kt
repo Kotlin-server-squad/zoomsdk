@@ -3,6 +3,9 @@ package com.kss.zoom.test
 import com.kss.zoom.module.meetings.model.api.MeetingRequest
 import com.kss.zoom.module.meetings.model.api.MeetingResponse
 import com.kss.zoom.module.meetings.model.api.UpdateMeetingRequest
+import com.kss.zoom.module.users.model.api.CreateUserRequest
+import com.kss.zoom.module.users.model.api.UpdateUserRequest
+import com.kss.zoom.module.users.model.api.UserResponse
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.client.utils.*
@@ -151,3 +154,45 @@ fun UpdateMeetingRequest.toJson(): String =
             "timezone": "$timezone"
         }
     """.trimIndent()
+
+fun CreateUserRequest.toJson(): String =
+    """
+        {
+            "action": "$action",
+            "user_info": {
+                "email": "${userInfo.email}",
+                "first_name": "${userInfo.firstName}",
+                "last_name": "${userInfo.lastName}",
+                "display_name": "${userInfo.displayName}",
+                "type": ${userInfo.type}
+            }
+        }
+    """.trimIndent()
+
+fun UpdateUserRequest.toJson(): String =
+    """
+        {
+            "company": ${company.toNullableString()},
+            "department": ${department.toNullableString()},
+            "first_name": ${firstName.toNullableString()},
+            "last_name": ${lastName.toNullableString()},
+            "job_title": ${jobTitle.toNullableString()},
+            "language": ${language.toNullableString()},
+            "phone_numbers": ${phoneNumbers.joinToString(prefix = "[", postfix = "]")},
+            "pmi": $personalMeetingId
+        }
+    """.trimIndent()
+
+fun UserResponse.toJson(): String =
+    """
+        {
+            "first_name": "$firstName",
+            "last_name": "$lastName",
+            "id": "$id",
+            "type": $type,
+            "email": ${email.toNullableString()},
+            "company": ${company.toNullableString()}
+        }
+    """.trimIndent()
+
+fun String?.toNullableString(): String? = this?.let { "\"$it\"" }
