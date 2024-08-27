@@ -6,12 +6,12 @@ import com.kss.zoom.common.extensions.coroutines.map
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
 import com.kss.zoom.model.pagination.Page
-import com.kss.zoom.model.pagination.PaginationObject
 import com.kss.zoom.model.request.ListRequest
 import com.kss.zoom.module.ZoomModuleBase
 import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.users.model.*
+import com.kss.zoom.module.users.model.api.PaginationObject
 import com.kss.zoom.module.users.model.api.UserResponse
 import com.kss.zoom.module.users.model.api.toModel
 import kotlinx.datetime.Clock
@@ -31,7 +31,9 @@ class DefaultUsers(
             token = token,
             contentType = "application/json",
             body = request.toApi()
-        ).map { it.toModel() }
+        ).map {
+            it.toModel()
+        }
     }
 
     override suspend fun update(request: UpdateRequest): CallResult<User> = withAccessToken(request) { token ->
@@ -65,7 +67,7 @@ class DefaultUsers(
             StringBuilder("page_number=${request.pageRequest.index}&page_size=${request.pageRequest.size}")
         request.pageRequest.filters.forEach { params.append("&${it.toQueryString()}") }
         request.pageRequest.nextPageToken?.let { params.append("&next_page_token=$it") }
-        client.get<PaginationObject<UserResponse>>(
+        client.get<PaginationObject>(
             url = url("/users?$params"),
             token = token
         ).map { it.toModel() }

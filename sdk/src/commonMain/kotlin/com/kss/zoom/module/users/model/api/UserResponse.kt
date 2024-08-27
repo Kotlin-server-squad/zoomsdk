@@ -11,8 +11,18 @@ data class UserResponse(
     @SerialName("last_name")
     val lastName: String,
     val id: String,
-    val email: String,
     val type: Int,
+    val email: String? = null,
+    val company: String? = null,
 )
 
-fun UserResponse.toModel(): User = TODO()
+fun UserResponse.toModel(): User =
+    User(
+        id = id,
+        email = email,
+        firstName = firstName,
+        lastName = lastName,
+        displayName = "$firstName $lastName",
+        type = type,
+        company = company,
+    )

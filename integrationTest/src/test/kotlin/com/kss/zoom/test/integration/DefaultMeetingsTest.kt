@@ -30,32 +30,32 @@ class DefaultMeetingsTest : ZoomModuleTest() {
 
     @Test
     fun `should create a meeting`() = runTest {
-        val request = createMeetingRequest("Test Meeting")
+        val request = createRequest()
         val meeting = call { meetings.create(request) }
         verifyMeeting(meeting, request)
     }
 
     @Test
     fun `should update a meeting`() = runTest {
-        val meeting = call { meetings.create(createMeetingRequest("Test Meeting")) }
-        val request = updateMeetingRequest(meeting.id, topic = "Updated Test Meeting", duration = 60)
+        val meeting = call { meetings.create(createRequest()) }
+        val request = updateRequest(meeting.id, topic = "Updated Test Meeting", duration = 60)
         val updatedMeeting = call { meetings.update(request) }
         verifyMeeting(updatedMeeting, request)
     }
 
     @Test
     fun `should get a meeting by id`() = runTest {
-        val request = createMeetingRequest("Test Meeting")
+        val request = createRequest()
         val meeting = call { meetings.create(request) }
-        val foundMeeting = call { meetings.get(getMeetingRequest(meeting.id)) }
+        val foundMeeting = call { meetings.get(GetRequest(meeting.id)) }
         assertEquals(meeting.normalize(), foundMeeting.normalize(), "Meetings should be the same")
     }
 
     @Test
     fun `should delete a meeting`() = runTest {
-        val meeting = call { meetings.create(createMeetingRequest("Test Meeting")) }
-        call { meetings.delete(deleteMeetingRequest(meeting.id)) }
-        when (val result = meetings.get(getMeetingRequest(meeting.id))) {
+        val meeting = call { meetings.create(createRequest()) }
+        call { meetings.delete(deleteRequest(meeting.id)) }
+        when (val result = meetings.get(GetRequest(meeting.id))) {
             is CallResult.Success -> fail("Meeting should not be found")
             is CallResult.NotFound -> {
                 // Expected
@@ -67,7 +67,7 @@ class DefaultMeetingsTest : ZoomModuleTest() {
     @Test
     fun `should list user meetings`() = runTest {
         (1..3).mapIndexed { index, _ ->
-            call { meetings.create(createMeetingRequest("Test Meeting $index")) }
+            call { meetings.create(createRequest("Test Meeting $index")) }
         }.forEachIndexed { index, meeting ->
             val page = call { meetings.list(ListRequest(userId = userId, pageRequest = PageRequest(index = (index + 1).toShort(), size = 1))) }
             assertEquals(1, page.size, "Page size should be 1")
@@ -87,8 +87,8 @@ class DefaultMeetingsTest : ZoomModuleTest() {
         )
     }
 
-    private fun createMeetingRequest(
-        topic: String,
+    private fun createRequest(
+        topic: String = "Test Meeting",
         duration: Short = 30,
         timezone: TimeZone = TimeZone.UTC,
     ): CreateRequest {
@@ -101,7 +101,7 @@ class DefaultMeetingsTest : ZoomModuleTest() {
         )
     }
 
-    private fun updateMeetingRequest(
+    private fun updateRequest(
         meetingId: String,
         topic: String,
         startTime: LocalDateTime = tenMinutesFromNow(),
@@ -118,14 +118,14 @@ class DefaultMeetingsTest : ZoomModuleTest() {
         )
     }
 
-    private fun getMeetingRequest(meetingId: String): GetRequest {
+    private fun GetRequest(meetingId: String): GetRequest {
         return GetRequest(
             userId = userId,
             meetingId = meetingId
         )
     }
 
-    private fun deleteMeetingRequest(meetingId: String): DeleteRequest {
+    private fun deleteRequest(meetingId: String): DeleteRequest {
         return DeleteRequest(
             userId = userId,
             meetingId = meetingId
