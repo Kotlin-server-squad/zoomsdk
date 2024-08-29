@@ -9,9 +9,9 @@ name: Run Integration Tests
 
 on:
   push:
-    branches: [ "refactoring" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "refactoring" ]
+    branches: [ "main" ]
   workflow_call:
 
 permissions:
