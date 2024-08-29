@@ -1,58 +1,234 @@
-[![official project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+# Zoom SDK
 
-# Multiplatform library template
+**Table of Contents**
+- [Overview](#overview)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Initialization](#initialization)
+  - [Authentication](#authentication)
+  - [Exception Handling](#exception-handling)
+  - [Meeting Management](#meeting-management)
+  - [User Management](#user-management)
+  - [Webhooks](#webhooks)
+  - [Rate Limiting](#rate-limiting)
+  - [Testing](#testing)
+- [Supported Platforms](#supported-platforms)
+- [Examples](#examples)
+- [Contributing](#contributing)
+- [License](#license)
 
-## What is it?
 
-It is the barebones library project intended to quickly bootstrap a Kotlin Multiplatform library, that is deployable to Maven Central.
+## Overview
+Zoom SDK is a tool for integrating Zoom meetings into your applications. 
+It is available for both desktop and mobile applications.
 
-It has only one function: generate the [Fibonacci sequence](https://en.wikipedia.org/wiki/Fibonacci_sequence) starting from platform-provided numbers. Also, it has a test for each platform just to be sure that tests run.
+**Benefits**
+- **Authentication**: Handle user and server authentication with Zoom.
+- **Meeting Management**: Create, and manage Zoom meetings. Gain access to meeting details and participants.
+- **User Management**: Manage users within your Zoom account.
+- **Webhooks**: Receive notifications about Zoom events and take action.
+- **Rate Limiting**: Built-in rate limiting helps you avoid being blocked by Zoom.
+- **Testing**: Built-in testing tools help you test your integration with Zoom.
+- **Cross-Platform**: Available for both desktop and mobile applications.
 
-Note that no other actions or tools usually required for the library development are set up, such as [tracking of backwards compatibility]
-(https://kotlinlang.org/docs/jvm-api-guidelines-backward-compatibility.html#tools-designed-to-enforce-backward-compatibility), explicit API mode,
-licensing, contribution guideline, code of conduct and others.
+## Installation
+The SDK will be available on Maven Central. Stay tuned for the release announcement.
 
-## How do I build it?
+## Usage
+Here is a quick guide to get you started with the Zoom SDK.
 
-1. - [x] Clone this repository ot just [use it as template](https://github.com/Kotlin/multiplatform-library-template/generate)
-1. - [ ] Edit library module name and include it in [`settings.gradle.kts`](settings.gradle.kts#L18)
-1. - [ ] Edit [`groupId` and `version`](convention-plugins/src/main/kotlin/module.publication.gradle.kts#L10-L11)
-    1. If you need the Android support update namespace [there](library/build.gradle.kts#L38) too
-    1. If you don't need an Android support delete the [`android` section](library/build.gradle.kts#L37-L43)
-1. - [ ] Edit [build targets you need](library/build.gradle.kts#L9-L21)
+### Initialization
+In a nutshell, the Zoom SDK allows you to:
+```kotlin
+// Instantiate the SDK
+val zoom = Zoom.create("clientId", "clientSecret", "accountId")
 
-At this stage, you have everything set to work with Kotlin Multiplatform. The project should be buildable (but you might need to provide actual starting values for the platforms you need).
+// Access the Zoom API
+val meetings = zoom.meetings()
+val users = zoom.users()
 
-## How do I make it build on GitHub Actions?
+// Work with the Zoom API
+val meeting = call { meetings.get(GetRequest("userId1", "meetingId")) }
+println("Found meeting: $meeting")
 
-To make it work on GitHub actions, you need to update the [`matrix` section in `gradle.yml`](.github/workflows/gradle.yml#L25-L34). If you didn't change platforms in `build.gradle.kts` you don't need to touch anything. But still read it to understand how it works.
+val user = call { users.get(GetRequest("userId1")) }
+println("This is me: $user")
+```
 
-Also, currently, it only runs tests, but you can change this behaviour as you wish by modifying `matrix` and the Gradle [build command](.github/workflows/gradle.yml#L52)
+### Authentication
+You can use the Zoom SDK on behalf of the user or on behalf of the server.
 
-## How do I deploy it to Maven Central?
+#### Server Authentication
+You can use the Zoom SDK to authenticate the server with Zoom. This allows you to access Zoom resources 
+in the respective Zoom account.
 
-The most part of the job is already automated for you. However, deployment to Maven Central requires some manual work from your side. 
+You need to register a Server-to-Server app in the Zoom Marketplace and obtain the client ID and client secret.
 
-1. - [ ] Create an account at [Sonatype issue tracker](https://issues.sonatype.org/secure/Signup!default.jspa)
-1. - [ ] [Create an issue](https://issues.sonatype.org/secure/CreateIssue.jspa?issuetype=21&pid=10134) to create new project for you
-1. - [ ] You will have to prove that you own your desired namespace
-1. - [ ] Create a GPG key with `gpg --gen-key`, use the same email address you used to sign up to the Sonatype Jira
-1. - [ ] Find your key id in the output of the previous command looking like `D89FAAEB4CECAFD199A2F5E612C6F735F7A9A519`
-1. - [ ] Upload your key to a keyserver, for example 
-    ```bash
-    gpg --send-keys --keyserver keyserver.ubuntu.com "<your key id>"
-    ```
-1. - [ ] Now you should create secrets available to your GitHub Actions
-    1. via `gh` command
-    ```bash
-    gh secret set OSSRH_GPG_SECRET_KEY -a actions --body "$(gpg --export-secret-key --armor "<your key id>")"
-    gh secret set OSSRH_GPG_SECRET_KEY_ID -a actions --body "<your key id>"
-    gh secret set OSSRH_GPG_SECRET_KEY_PASSWORD -a actions --body "<your key password>"
-    gh secret set OSSRH_PASSWORD -a actions --body "<your sonatype account password>"
-    gh secret set OSSRH_USERNAME -a actions --body "<your sonatype account username>"
-    ```
-    1. Or via the interface in `Settings` → `Secrets and Variables` → `Actions`, same variables as in 1.
-1. - [ ] Edit deployment pom parameters in [`module.publication.gradle.kts`](convention-plugins/src/main/kotlin/module.publication.gradle.kts#L25-L44)
-1. - [ ] Edit deploy targets in [`deploy.yml`](.github/workflows/deploy.yml#L23-L36)
-1. - [ ] Call deployment manually when ready [in Actions](../../actions/workflows/deploy.yml) → `Run Workflow`
-1. - [ ] When you see in your account on https://oss.sonatype.org that everything is fine, you can release your staging repositories and add target `releaseSonatypeStagingRepository` to `deploy.yml` [after this line](.github/workflows/deploy.yml#L60). This way artifacts will be published to central automatically when tests pass.
+Next, please grant the following scopes (permissions) to the app:
+
+**Meetings**
+
+| Scope | Description |
+| --- | --- |
+|meeting:read:list_meetings:admin| View a user's meetings |
+|meeting:read:list_past_instances:admin| View a user's meetings |
+|meeting:read:meeting:admin| View a meeting |
+|meeting:update:meeting:admin| Update a meeting |
+|meeting:delete:meeting:admin| Delete a meeting |
+|meeting:write:meeting:admin| Create a meeting for a user |
+
+**Users**
+
+| Scope | Description                |
+| --- |----------------------------|
+|user:read:list_users:admin| View users                 |
+|user:read:user:admin| View a user                |
+|user:delete:user:admin| Delete a user              |
+|user:write:user:admin| Create a user           |
+|user:update:user:admin|Update a user            |
+
+In the Zoom app, please capture the following information:
+- Client ID
+- Client Secret
+- Account ID
+
+Once the app is in place you can authenticate the server with Zoom
+and start using the Zoom SDK:
+```kotlin
+// Instantiate the SDK
+val zoom = Zoom.create("clientId", "clientSecret", "accountId")
+
+// Access the Zoom API
+val meetings = zoom.meetings()
+val users = zoom.users()
+```
+
+#### User Authentication
+You can use the Zoom SDK to authenticate the user with Zoom. This allows you to access Zoom resources
+on behalf of the user.
+
+You need to register an OAuth app in the Zoom Marketplace 
+and obtain the client ID and client secret.
+
+Please grant the following scopes (permissions) to the app:
+
+**Meetings**
+
+TBD
+
+| Scope | Description |
+| --- | --- |
+
+
+**Users**
+
+TBD
+
+| Scope | Description                |
+| --- |----------------------------|
+
+Once the app is in place you can authenticate the user with Zoom:
+```kotlin
+/**
+ * OAuth2 flow: Requires user interaction
+ */
+
+// Helper method to get Zoom authorization URL
+val authUrl = zoom.getAuthorizationUrl("callbackUrl")
+println("Use $authUrl in the client code to obtain an authorization code")
+
+// Once OAuth is done, we can authorize the SDK on behalf of a particular user using the authorization code
+// We can authorize as many users as we want
+zoom.authorize("userId1", "code1")
+zoom.authorize("userId2", "code2")
+zoom.authorize("userId3", "code3")
+
+// We can refresh the authorization for a particular user
+zoom.reauthorize("userId1")
+
+// Alternatively, we can register a user directly with their access and refresh tokens
+zoom.registerUser("userId4", "accessToken4", "refreshToken4")
+
+// Access the Zoom API. All calls will be made on behalf of the user.
+val meetings = zoom.meetings()
+val users = zoom.users()
+```
+
+## Exception Handling
+By default, the Zoom SDK does not throw exceptions. Instead, it returns a `CallResult` object that contains the result of the operation or an error.
+
+You can check if the operation was successful or if an error occurred:
+
+```kotlin
+when (val result = meetings.get(GetRequest("userId1", "meetingId"))) {
+    is CallResult.Success -> {
+        val meeting = result.data
+        println("Found meeting: $meeting")
+    }
+    is CallResult.Error -> {
+        val error = result.message
+        println("Error: $error")
+    }
+    is CallResult.NotFound -> {
+        println("Meeting not found")
+    }
+}
+```
+If you prefer to handle exceptions, you can enable exceptions in the SDK:
+```kotlin
+// This will throw an exception if an error occurs
+val meeting = call { meetings.get(GetRequest("userId1", "meetingId")) }
+```
+
+## Meeting Management
+The Zoom SDK allows you to create, update, and delete meetings. You can also access meeting details and participants.
+
+TBD
+
+## User Management
+The Zoom SDK allows you to manage users within your Zoom account. You can create, update, and delete users. You can also access user details.
+
+TBD
+
+## Webhooks
+The Zoom SDK allows you to receive notifications about Zoom events and take action. You can subscribe to webhooks and handle events in your application.
+
+TBD
+
+## Rate Limiting
+The Zoom SDK includes built-in rate limiting to help you avoid being blocked by Zoom. The SDK will automatically handle rate limiting for you.
+
+TBD
+
+## Testing
+The Zoom SDK allows you to generate mock Zoom events to test your integration and ensure it works as expected.
+
+TBD
+
+## Supported Platforms
+The Zoom SDK is available for the following platforms:
+* JVM
+* Desktop
+* Android
+* iOS
+
+## Examples
+Stay tuned for examples to help you get started with the Zoom SDK.
+
+[//]: # (- [Java]&#40;#java&#41;)
+
+[//]: # (- [Kotlin]&#40;#kotlin&#41;)
+
+[//]: # (- [Android]&#40;#android&#41;)
+
+[//]: # (- [iOS]&#40;#ios&#41;)
+
+[//]: # (- [React Native]&#40;#react-native&#41;)
+
+[//]: # (- [Flutter]&#40;#flutter&#41;)
+
+## Contributing
+We welcome contributions to the Zoom SDK. Please refer to the [contribution guidelines](CONTRIBUTING.md) for more information.
+
+## License
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
