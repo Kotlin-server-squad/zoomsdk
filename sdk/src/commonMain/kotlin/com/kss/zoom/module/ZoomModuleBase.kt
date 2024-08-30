@@ -27,7 +27,7 @@ abstract class ZoomModuleBase(
             try {
                 request.validate(clock)
             } catch (e: IllegalArgumentException) {
-                return CallResult.Error(e.message ?: "Validation failed")
+                return CallResult.Error.Other(e.message ?: "Validation failed")
             }
         }
         return tryCall {

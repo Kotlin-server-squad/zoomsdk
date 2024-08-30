@@ -12,8 +12,7 @@ fun String.toTimestamp(): Long {
 
 fun <T, R> CallResult<T>.map(transform: (T) -> R): CallResult<R> = when (this) {
     is CallResult.Success -> CallResult.Success(transform(data))
-    is CallResult.Error -> CallResult.Error(message)
-    is CallResult.NotFound -> CallResult.NotFound
+    is CallResult.Error -> this
 }
 
 fun Long.toIsoDateTimeString(timezone: String): String {

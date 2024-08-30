@@ -169,14 +169,30 @@ when (val result = meetings.get(GetRequest("userId1", "meetingId"))) {
         val error = result.message
         println("Error: $error")
     }
-    is CallResult.NotFound -> {
+}
+```
+You can choose to handle a specific error:
+```kotlin
+when (val result = meetings.get(GetRequest("userId1", "meetingId"))) {
+    is CallResult.Success -> {
+        val meeting = result.data
+        println("Found meeting: $meeting")
+    }
+    is CallResult.Error.NotFound -> {
         println("Meeting not found")
+    }
+    is CallResult.Error.Unauthorized -> {
+        println("Unauthorized")
+    }
+    // Handle other errors
+    else -> {
+        println("Error: ${result.message}")
     }
 }
 ```
 If you prefer to handle exceptions, you can enable exceptions in the SDK:
 ```kotlin
-// This will throw an exception if an error occurs
+// This will throw an IllegalStateException if an error occurs
 val meeting = call { meetings.get(GetRequest("userId1", "meetingId")) }
 ```
 

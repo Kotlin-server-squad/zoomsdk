@@ -56,7 +56,7 @@ class DefaultUsersTest : ZoomModuleTest() {
         call { users.delete(deleteRequest(user.id)) }
         when (val result = users.get(GetRequest(user.id))) {
             is CallResult.Success -> fail("Meeting should not be found")
-            is CallResult.NotFound -> {
+            is CallResult.Error.NotFound -> {
                 // Expected
             }
             else -> fail("Unexpected result: $result")
