@@ -36,7 +36,7 @@ class Zoom private constructor(
 
     suspend fun reauthorize(userId: String): CallResult<Unit> {
         val refreshToken = tokenStorage.getRefreshToken(userId)
-            ?: return CallResult.Error("No refresh token found for user $userId")
+            ?: return CallResult.Error.Other("No refresh token found for user $userId")
         return auth.reauthorize(refreshToken).map {
             tokenStorage.saveUserTokens(userId, it)
         }

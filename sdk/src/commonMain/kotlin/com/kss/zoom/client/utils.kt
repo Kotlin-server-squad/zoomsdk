@@ -12,11 +12,12 @@ suspend inline fun <reified T> tryHttpCall(crossinline block: suspend () -> Http
             CallResult.Success(response.body())
         } else {
             when (response.status.value) {
-                400 -> CallResult.Error("Bad request")
-                401, 403 -> CallResult.Error("Unauthorized")
-                404 -> CallResult.NotFound
-                429 -> CallResult.Error("Too many requests")
-                else -> CallResult.Error("Call failed with status ${response.status.value}")
+                400 -> CallResult.Error.BadRequest
+                401 -> CallResult.Error.Unauthorized
+                403 -> CallResult.Error.Forbidden
+                404 -> CallResult.Error.NotFound
+                429 -> CallResult.Error.TooManyRequests
+                else -> CallResult.Error.Other("Call failed with status ${response.status.value}")
             }
         }
     }

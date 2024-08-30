@@ -16,3 +16,15 @@ repositories {
 kotlin {
     jvmToolchain(8)
 }
+
+subprojects {
+    if (name == "integrationTest") {
+        tasks.withType<Test> {
+            if (gradle.startParameter.taskNames.any { it.contains("build") }) {
+                // Disable tests for integrationTest by default.
+                // Integration tests are expensive and should be run manually by calling `./gradlew integrationTest:test`.
+                enabled = false
+            }
+        }
+    }
+}
