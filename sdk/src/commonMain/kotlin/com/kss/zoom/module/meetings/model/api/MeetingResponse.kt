@@ -1,13 +1,15 @@
 package com.kss.zoom.module.meetings.model.api
 
 import com.kss.zoom.common.extensions.toTimestamp
+import com.kss.zoom.model.DynamicContext
+import com.kss.zoom.model.api.Model
 import com.kss.zoom.module.meetings.model.Meeting
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class MeetingResponse(
-    val id: Long,
+    override val id: Long,
     val uuid: String,
     val topic: String,
     val duration: Short,
@@ -20,9 +22,10 @@ data class MeetingResponse(
     @SerialName("start_url") val startUrl: String? = null,
     @SerialName("join_url") val joinUrl: String,
     val password: String? = null,
-)
+    override val data: Map<String, String>,
+) : Model<Long>
 
-fun MeetingResponse.toModel(): Meeting {
+fun MeetingResponse.toModel(context: DynamicContext? = null): Meeting {
     return Meeting(
         id = id.toString(),
         uuid = uuid,
@@ -36,6 +39,7 @@ fun MeetingResponse.toModel(): Meeting {
         status = status,
         hostEmail = hostEmail,
         startUrl = startUrl,
-        password = password
+        password = password,
+        context = context?.fromMap(data) ?: DynamicContext(),
     )
 }
