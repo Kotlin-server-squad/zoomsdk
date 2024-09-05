@@ -47,6 +47,7 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
                         Float::class -> value.toFloat()
                         Double::class -> value.toDouble()
                         Boolean::class -> value.toBoolean()
+                        Map::class -> value // TODO The value will be a JSON string - > parse it to map using JSON serializer: see - https://stackoverflow.com/questions/71675003/parse-json-to-mapstring-string-kotlin-multiplatform
                         else -> null
                     }
                     propertyValue?.let { properties[entry.key] = it }

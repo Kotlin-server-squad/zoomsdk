@@ -2,6 +2,7 @@ package com.kss.zoom.module.meetings.model.api
 
 import com.kss.zoom.common.extensions.toTimestamp
 import com.kss.zoom.model.DynamicContext
+import com.kss.zoom.model.JsonAsMapSerializer
 import com.kss.zoom.model.api.Model
 import com.kss.zoom.module.meetings.model.Meeting
 import kotlinx.serialization.SerialName
@@ -22,6 +23,7 @@ data class MeetingResponse(
     @SerialName("start_url") val startUrl: String? = null,
     @SerialName("join_url") val joinUrl: String,
     val password: String? = null,
+    @Serializable(with = JsonAsMapSerializer::class)
     override val data: Map<String, String>,
 ) : Model<Long>
 
