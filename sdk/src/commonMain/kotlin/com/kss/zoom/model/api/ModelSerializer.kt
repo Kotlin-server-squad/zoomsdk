@@ -1,7 +1,7 @@
 package com.kss.zoom.model.api
 
-import com.kss.zoom.model.DynamicContext
-import com.kss.zoom.model.DynamicProperty
+import com.kss.zoom.model.context.DynamicContext
+import com.kss.zoom.model.context.DynamicProperty
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.*
 

@@ -6,8 +6,6 @@ import com.kss.zoom.common.storage.InMemoryTokenStorage
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.common.tryCall
 import com.kss.zoom.model.CallResult
-import com.kss.zoom.model.DynamicProperty.Companion.nullable
-import com.kss.zoom.model.DynamicProperty.Companion.required
 import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
 import com.kss.zoom.module.auth.DefaultAuth
@@ -15,7 +13,6 @@ import com.kss.zoom.module.auth.model.AuthConfig
 import com.kss.zoom.module.auth.model.UserTokens
 import com.kss.zoom.module.meetings.DefaultMeetings
 import com.kss.zoom.module.meetings.Meetings
-import com.kss.zoom.module.meetings.model.MeetingSerializer
 import com.kss.zoom.module.users.DefaultUsers
 import com.kss.zoom.module.users.Users
 import kotlinx.datetime.Clock
@@ -86,65 +83,3 @@ class Zoom private constructor(
     }
 }
 
-// TODO Add this to the documentation about dynamic properties
-fun main() {
-    // Let's assume this block is a custom event handler for a Zoom webhook. These are some of the custom fields that can be added to the base model
-    val name = required("name", "Unknown")
-    val scheduleType = required("schedule_type", 1)
-    val description = nullable<String>("description")
-    val metadata = required<Map<String, String>>("metadata", emptyMap())
-
-    // Register a custom JSON serializer - do this once in the application
-    val meetingResponseSerializer = MeetingSerializer(name, scheduleType, description, metadata)
-
-    // Incoming JSON from the webhook
-    val json = """
-        {
-            "id": "123",
-            "uuid": "uuid",
-            "topic": "topic",
-            "duration": 60,
-            "host_id": "hostId",
-            "created_at": "2024-01-01T00:00:00Z",
-            "start_time": "2024-01-01T00:00:00Z",
-            "timezone": "timezone",
-            "join_url": "joinUrl",
-            "name": "Meeting",
-            "description": "My test event",
-            "schedule_type": 2,
-            "metadata": {
-                "user_id": "user123",
-                "registered_at": "2024-01-01T00:00:00Z"
-            }
-        }
-    """.trimIndent()
-
-    val meetingModel = meetingResponseSerializer.toModel(json)
-    println(meetingModel)
-    println("Custom field 'name': ${meetingModel.context[name]}")
-    println("Custom field 'scheduleType': ${meetingModel.context[scheduleType]}")
-
-    /**
-     *     // Let's say this is some deserialized JSON object in the base form, with all expected (statically typed) fields
-     *     val meeting = Meeting(
-     *         id = "id",
-     *         uuid = "uuid",
-     *         topic = "topic",
-     *         duration = 60,
-     *         hostId = "hostId",
-     *         createdAt = 0,
-     *         startTime = 0,
-     *         timezone = "timezone",
-     *         joinUrl = "joinUrl",
-     *
-     *         // Now we add the dynamic properties
-     *         context = context {
-     *             name - "Meeting"
-     *             scheduleType - 2  // Let's say that this is missing in the input JSON, it should fallback to the default value
-     *             description - "My test event"
-     *             metadata - mapOf("userId" to "user123")
-     *         }
-     *     )
-     */
-
-}

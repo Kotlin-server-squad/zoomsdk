@@ -1,8 +1,8 @@
 package com.kss.zoom.module.meetings.model.api
 
 import com.kss.zoom.common.extensions.toTimestamp
-import com.kss.zoom.model.DynamicContext
-import com.kss.zoom.model.JsonAsMapSerializer
+import com.kss.zoom.model.context.DynamicContext
+import com.kss.zoom.model.serialization.JsonAsMapSerializer
 import com.kss.zoom.model.api.Model
 import com.kss.zoom.module.meetings.model.Meeting
 import kotlinx.serialization.SerialName

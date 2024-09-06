@@ -1,4 +1,4 @@
-package com.kss.zoom.model
+package com.kss.zoom.model.serialization
 
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -18,7 +18,6 @@ object JsonAsMapSerializer : JsonTransformingSerializer<Map<String, String>>(
                     is JsonObject -> JsonPrimitive(value.toString())
                     is JsonArray -> JsonPrimitive(value.toString())
                 }
-//                JsonPrimitive(value.jsonPrimitive.contentOrNull ?: "")
             }
         )
     }

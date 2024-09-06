@@ -1,5 +1,9 @@
-package com.kss.zoom.model
+package com.kss.zoom.model.serialization
 
+import com.kss.zoom.model.context.DynamicContext
+import com.kss.zoom.model.context.DynamicProperty
+import com.kss.zoom.model.Model
+import com.kss.zoom.model.context.context
 import com.kss.zoom.model.api.ModelSerializer as ApiModelSerializer
 import com.kss.zoom.model.api.Model as ApiModel
 

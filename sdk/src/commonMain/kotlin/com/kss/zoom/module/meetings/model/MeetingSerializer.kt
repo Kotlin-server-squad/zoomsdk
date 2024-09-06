@@ -1,7 +1,7 @@
 package com.kss.zoom.module.meetings.model
 
-import com.kss.zoom.model.DynamicProperty
-import com.kss.zoom.model.ModelSerializer
+import com.kss.zoom.model.context.DynamicProperty
+import com.kss.zoom.model.serialization.ModelSerializer
 import com.kss.zoom.module.meetings.model.api.MeetingResponse
 import com.kss.zoom.module.meetings.model.api.toModel
 import com.kss.zoom.model.api.ModelSerializer as ApiModelSerializer

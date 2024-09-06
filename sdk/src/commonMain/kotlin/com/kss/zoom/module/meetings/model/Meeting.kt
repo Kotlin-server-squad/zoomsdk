@@ -1,6 +1,6 @@
 package com.kss.zoom.module.meetings.model
 
-import com.kss.zoom.model.DynamicContext
+import com.kss.zoom.model.context.DynamicContext
 import com.kss.zoom.model.Model
 
 data class Meeting(
