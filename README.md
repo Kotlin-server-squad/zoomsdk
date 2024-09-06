@@ -7,6 +7,7 @@
   - [Initialization](#initialization)
   - [Authentication](#authentication)
   - [Exception Handling](#exception-handling)
+  - [Dynamic Properties](#dynamic-properties)
   - [Meeting Management](#meeting-management)
   - [User Management](#user-management)
   - [Webhooks](#webhooks)
@@ -194,6 +195,94 @@ If you prefer to handle exceptions, you can enable exceptions in the SDK:
 ```kotlin
 // This will throw an IllegalStateException if an error occurs
 val meeting = call { meetings.get(GetRequest("userId1", "meetingId")) }
+```
+## Dynamic Properties
+The Zoom SDK allows you to access dynamic properties of Zoom resources. You can access these properties using the `context` parameter.
+
+One of the challenges of working with Zoom is that the API responses can be quite large and complex. 
+The Zoom SDK simplifies this by providing a way to access dynamic properties in a type-safe manner.
+
+Example:
+```kotlin
+// A Meeting object has predefined fields, as well as a dynamic property called "context"
+data class Meeting(
+  // Identifies the meeting instance
+  override val id: String,
+  
+  // Dynamic context
+  override val context: DynamicContext = DynamicContext(),
+  
+  // Predefined fields
+  val uuid: String,
+  val topic: String,
+  val duration: Short,
+  val hostId: String,
+  val createdAt: Long,
+  val startTime: Long,
+  val timezone: String,
+  val joinUrl: String,
+  val status: String? = null,
+  val hostEmail: String? = null,
+  val startUrl: String? = null,
+  val password: String? = null,
+) : Model
+```
+
+Suppose you're interested in the `participants` property of a meeting and, optionally, in a description. You can access it like this:
+
+```kotlin
+import com.kss.zoom.model.context.DynamicProperty.Companion.nullable
+import com.kss.zoom.model.context.DynamicProperty.Companion.required
+
+// Step 1: Define dynamic properties
+
+// The field "participants" is required and it defaults to an empty list
+val meetingParticipants = required<List<String>>("participants", emptyList())
+
+// The field "description" is optional and remains null if not present
+val description = nullable<String>("description")
+
+// Step 2: Register a custom JSON serializer - do this once in your application
+val meetingSerializer = MeetingSerializer(description, meetingParticipants)
+// TODO register the serializer with the SDK
+```
+
+Now you can access the dynamic properties of a meeting:
+
+```kotlin
+// Scenario 1: Make a call to the Zoom API and access the dynamic properties
+val meeting = call { meetings.get(GetRequest("userId1", "meetingId")) }
+println(meeting.context[meetingParticipants])
+println(meeting.context[description])
+```
+
+Another example is to access the `participants` property of a meeting in a webhook event:
+
+```kotlin
+// Scenario 2: Handle a webhook event and access the dynamic properties
+// Incoming JSON from the webhook
+val json = """
+        {
+            "id": "123",
+            "uuid": "uuid",
+            "topic": "topic",
+            "duration": 60,
+            "host_id": "hostId",
+            "created_at": "2024-01-01T00:00:00Z",
+            "start_time": "2024-01-01T00:00:00Z",
+            "timezone": "timezone",
+            "join_url": "joinUrl",
+            "name": "Meeting",
+            "description": "My test event",
+            "schedule_type": 2,
+            "participants": {
+                "participant1": "participant-01@test.com",
+                "participant2": "participant-02@test.com"
+            }
+        }
+    """.trimIndent()
+    val meeting = meetingSerializer.toModel(json)
+    println(meeting.context[meetingParticipants])
 ```
 
 ## Meeting Management

@@ -1,7 +1,11 @@
 package com.kss.zoom.module.meetings.model
 
+import com.kss.zoom.model.context.DynamicContext
+import com.kss.zoom.model.Model
+
 data class Meeting(
-    val id: String,
+    override val id: String,
+    override val context: DynamicContext = DynamicContext(),
     val uuid: String,
     val topic: String,
     val duration: Short,
@@ -14,4 +18,4 @@ data class Meeting(
     val hostEmail: String? = null,
     val startUrl: String? = null,
     val password: String? = null,
-)
+) : Model
