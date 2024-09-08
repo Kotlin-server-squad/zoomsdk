@@ -32,7 +32,6 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
         return this
     }
 
-    @Suppress("IMPLICIT_CAST_TO_ANY")
     private fun cast(property: DynamicProperty<*>, value: String) {
         try {
             val propertyValue = when (property.type) {
@@ -45,7 +44,7 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
                 Double::class -> value.toDouble()
                 Boolean::class -> value.toBoolean()
                 Map::class -> jsonSerializer.decodeFromString<Map<String, String>>(value)
-                else -> null
+                else -> property.serializer?.let { jsonSerializer.decodeFromString(it, value) }
             }
             propertyValue?.let { properties[property] = property.cast(it) }
         } catch (e: Exception) {

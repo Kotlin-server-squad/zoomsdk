@@ -3,12 +3,17 @@ package com.kss.zoom.webhooks
 import com.kss.zoom.common.event.DefaultEventHandler.Companion.handler
 import com.kss.zoom.common.event.EventHandler
 import com.kss.zoom.model.context.DynamicProperty.Companion.required
+import com.kss.zoom.model.context.withSerializer
 import com.kss.zoom.model.event.Event
 import com.kss.zoom.model.request.WebhookRequest
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.test.*
+import kotlinx.serialization.builtins.ListSerializer
+import kotlin.test.AfterTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class DefaultWebhookHandlerTest {
 
@@ -208,7 +213,6 @@ class DefaultWebhookHandlerTest {
         verifyFailure()
     }
 
-    @Ignore // TODO Add support for custom serializer
     @Test
     fun `should handle custom data structures`() = runTest {
         handleWebhook(
@@ -276,13 +280,14 @@ class DefaultWebhookHandlerTest {
                 }              
             """.trimIndent(),
             handler {
-                val recordings = add { required<Recordings>("recording_files") }
+                val recordings = add { required<List<Recording>>("recording_files") }
+                    .withSerializer(ListSerializer(Recording.serializer()))
 
                 on { event ->
                     assertEquals("recording.completed", event.name, "Invalid event name")
                     assertEquals(1658940994914, event.timestamp, "Invalid timestamp")
                     val files = event.context[recordings]
-                    assertEquals(3, files.recordings.size, "Invalid number of recording files")
+                    assertEquals(3, files.size, "Invalid number of recording files")
                     eventQueue.add(event)
                 }
             }
@@ -316,15 +321,12 @@ class DefaultWebhookHandlerTest {
 
 // A custom data class in the client code
 @Serializable
-data class Recordings(val recordings: List<Recording>) {
-    @Serializable
-    data class Recording(
-        @SerialName("file_type") val fileType: String,
-        @SerialName("download_url") val downloadUrl: String,
-        @SerialName("recording_start") val start: String,
-        @SerialName("recording_end") val end: String
-    )
-}
+data class Recording(
+    @SerialName("file_type") val fileType: String,
+    @SerialName("download_url") val downloadUrl: String,
+    @SerialName("recording_start") val start: String,
+    @SerialName("recording_end") val end: String,
+)
 
 
 
