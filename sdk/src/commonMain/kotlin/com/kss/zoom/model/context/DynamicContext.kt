@@ -9,26 +9,22 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
         isLenient = true
     }
 
-    @Suppress("IMPLICIT_CAST_TO_ANY")
+    private val properties = HashMap<DynamicProperty<*>, Any?>().apply {
+        properties.forEach { put(it.property, it.value) }
+    }
+
+    private val unsetProperties = ArrayDeque<DynamicProperty<*>>()
+
     fun fromMap(map: Map<String, String>): DynamicContext {
         map.forEach { (key, value) ->
-            properties.filterKeys { property -> property.name == key }.entries.firstOrNull()?.let { entry ->
-                try {
-                    val propertyValue = when (entry.key.type) {
-                        String::class -> value
-                        Byte::class -> value.toByte()
-                        Short::class -> value.toShort()
-                        Int::class -> value.toInt()
-                        Long::class -> value.toLong()
-                        Float::class -> value.toFloat()
-                        Double::class -> value.toDouble()
-                        Boolean::class -> value.toBoolean()
-                        Map::class -> jsonSerializer.decodeFromString<Map<String, String>>(value)
-                        else -> null
-                    }
-                    propertyValue?.let { properties[entry.key] = entry.key.cast(it) }
-                } catch (e: ClassCastException) {
-                    // Ignore
+            // First check if the property is already set and replace it
+            properties.keys.firstOrNull { it.name == key }?.let { property ->
+                cast(property, value)
+            } ?: run {
+                // If the property is not set, check if it is in the unset properties
+                unsetProperties.firstOrNull { it.name == key }?.let { property ->
+                    cast(property, value)
+                    unsetProperties.remove(property)
                 }
             }
         }
@@ -36,8 +32,25 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
         return this
     }
 
-    private val properties = HashMap<DynamicProperty<*>, Any?>().apply {
-        properties.forEach { put(it.property, it.value) }
+    @Suppress("IMPLICIT_CAST_TO_ANY")
+    private fun cast(property: DynamicProperty<*>, value: String) {
+        try {
+            val propertyValue = when (property.type) {
+                String::class -> value
+                Byte::class -> value.toByte()
+                Short::class -> value.toShort()
+                Int::class -> value.toInt()
+                Long::class -> value.toLong()
+                Float::class -> value.toFloat()
+                Double::class -> value.toDouble()
+                Boolean::class -> value.toBoolean()
+                Map::class -> jsonSerializer.decodeFromString<Map<String, String>>(value)
+                else -> null
+            }
+            propertyValue?.let { properties[property] = property.cast(it) }
+        } catch (e: Exception) {
+            // Ignore invalid values
+        }
     }
 
     operator fun get(name: String): DynamicProperty<*>? = properties.keys.firstOrNull { it.name == name }
@@ -50,7 +63,12 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
         }
 
     fun <T> set(property: DynamicProperty<T>) {
-        properties[property] = property.default()
+        try {
+            properties[property] = property.default()
+        } catch (e: IllegalStateException) {
+            // Uninitialized property
+            unsetProperties.add(property)
+        }
     }
 
     operator fun <T> set(property: DynamicProperty<T>, value: T) {
@@ -64,7 +82,9 @@ fun context(init: DynamicContext.() -> Unit) = DynamicContext().apply(init)
 
 fun context(vararg property: DynamicProperty<*>): DynamicContext {
     val c = DynamicContext()
-    property.forEach { c.set(it) }
+    property.forEach {
+        c.set(it)
+    }
     return c
 }
 

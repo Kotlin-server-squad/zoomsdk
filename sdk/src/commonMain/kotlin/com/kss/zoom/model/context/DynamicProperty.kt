@@ -20,7 +20,7 @@ interface DynamicProperty<T> {
         inline operator fun <reified T> invoke(name: String, default: T) = fromDefaultSupplier(name) { default }
 
         inline fun <reified T> required(name: String) = fromDefaultSupplier<T>(name) {
-            throw IllegalStateException("Property is required")
+            throw IllegalStateException("Property $name is required")
         }
 
         inline fun <reified T> required(name: String, default: T) = fromDefaultSupplier(name) { default }

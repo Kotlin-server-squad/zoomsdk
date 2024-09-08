@@ -6,6 +6,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Payload(
-    @SerialName("account_id") val accountId: String,
-    @Serializable(with = JsonAsMapSerializer::class) val data: Map<String, String>,
+    @SerialName("account_id")
+    val accountId: String,
+    @SerialName("object")
+    @Serializable(with = JsonAsMapSerializer::class)
+    val data: Map<String, String>,
 )

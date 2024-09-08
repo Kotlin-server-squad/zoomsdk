@@ -1,6 +1,7 @@
 package com.kss.zoom.model.api.event
 
-import com.kss.zoom.model.context.DynamicContext
+import com.kss.zoom.model.context.DynamicProperty
+import com.kss.zoom.model.context.context
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.kss.zoom.model.event.Event as EventModel
@@ -12,10 +13,11 @@ data class Event(
     val payload: Payload,
 )
 
-fun Event.toModel(context: DynamicContext? = null): EventModel {
+fun Event.toModel(vararg property: DynamicProperty<*>): EventModel {
     return EventModel(
         name = name,
         timestamp = timestamp,
-        context = context?.fromMap(payload.data) ?: DynamicContext(),
+        context = context(*property).fromMap(payload.data),
     )
 }
+
