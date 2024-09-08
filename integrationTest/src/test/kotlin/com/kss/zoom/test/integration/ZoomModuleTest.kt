@@ -1,9 +1,13 @@
 package com.kss.zoom.test.integration
 
 import com.kss.zoom.Zoom
+import com.kss.zoom.model.context.DynamicContext
 import kotlin.test.BeforeTest
 
 abstract class ZoomModuleTest {
+    companion object {
+        val emptyContext = DynamicContext()
+    }
     private lateinit var zoom: Zoom
 
     protected abstract fun setUp(zoom: Zoom)

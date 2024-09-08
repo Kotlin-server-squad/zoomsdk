@@ -24,7 +24,7 @@ data class MeetingResponse(
     @SerialName("join_url") val joinUrl: String,
     val password: String? = null,
     @Serializable(with = JsonAsMapSerializer::class)
-    override val data: Map<String, String>,
+    override val data: Map<String, String> = emptyMap(),
 ) : Model<Long>
 
 fun MeetingResponse.toModel(context: DynamicContext? = null): Meeting {
