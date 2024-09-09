@@ -21,8 +21,15 @@ suspend fun <T> tryCall(block: suspend () -> CallResult<T>): CallResult<T> {
     }
 }
 
-fun getPropertyOrThrow(name: String): String {
-    return getProperty(name) ?: throw IllegalStateException("Property $name not set")
+suspend fun <T> tryCall(onError: suspend (Throwable) -> T, block: suspend () -> T): T {
+    return try {
+        block()
+    } catch (e: CancellationException) {
+        // Respect cancellation
+        throw e
+    } catch (t: Throwable) {
+        onError(t)
+    }
 }
 
 expect fun currentTimeMillis(): Long

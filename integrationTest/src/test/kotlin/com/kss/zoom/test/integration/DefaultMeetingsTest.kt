@@ -83,12 +83,13 @@ class DefaultMeetingsTest : ZoomModuleTest() {
             startUrl = this.startUrl?.let {
                 val url = Url(it)
                 "${url.protocol}://${url.host}${url.encodedPath}"
-            }
+            },
+            context = emptyContext,
         )
     }
 
     private fun createRequest(
-        topic: String = "Test Meeting",
+        topic: String = "My Test Meeting",
         duration: Short = 30,
         timezone: TimeZone = TimeZone.UTC,
     ): CreateRequest {

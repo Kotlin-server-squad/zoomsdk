@@ -3,8 +3,10 @@ package com.kss.zoom.module.meetings
 import com.kss.zoom.client.ApiClient
 import com.kss.zoom.common.storage.TokenStorage
 import com.kss.zoom.model.CallResult
+import com.kss.zoom.model.context.DynamicContext
 import com.kss.zoom.module.ZoomModuleConfig
 import com.kss.zoom.module.auth.Auth
+import com.kss.zoom.module.meetings.DefaultMeetingsTest.Companion.emptyContext
 import com.kss.zoom.module.meetings.model.*
 import com.kss.zoom.module.meetings.model.api.MeetingResponse
 import com.kss.zoom.module.meetings.model.api.toModel
@@ -42,6 +44,9 @@ class DefaultMeetingsTest {
             joinUrl = "joinUrl",
             password = "password"
         )
+
+        val emptyContext = DynamicContext()
+
     }
 
     @Test
@@ -65,7 +70,7 @@ class DefaultMeetingsTest {
         ) {
             when (val result = meetings(it).create(createRequest)) {
                 is CallResult.Success -> {
-                    assertEquals(meetingResponse.toModel(), result.data, "Meeting should be equal")
+                    assertEquals(meetingResponse.toModel().normalize(), result.data.normalize(), "Meeting should be equal")
                 }
 
                 else -> fail("Unexpected result: $result")
@@ -118,7 +123,7 @@ class DefaultMeetingsTest {
             meetings(it).update(updateRequest).let { result ->
                 when (result) {
                     is CallResult.Success -> {
-                        assertEquals(expectedMeetingResponse.toModel(), result.data, "Meeting should be equal")
+                        assertEquals(expectedMeetingResponse.toModel().normalize(), result.data.normalize(), "Meeting should be equal")
                     }
 
                     else -> fail("Unexpected result: $result")
@@ -140,7 +145,7 @@ class DefaultMeetingsTest {
             meetings(it).get(GetRequest(userId = USER_ID, meetingId = "1")).let { result ->
                 when (result) {
                     is CallResult.Success -> {
-                        assertEquals(meetingResponse.toModel(), result.data, "Meeting should be equal")
+                        assertEquals(meetingResponse.toModel().normalize(), result.data.normalize(), "Meeting should be equal")
                     }
 
                     else -> fail("Unexpected result: $result")
@@ -172,7 +177,7 @@ class DefaultMeetingsTest {
 
     @Test
     fun `should not accept an invalid request to create a meeting`() = runTest {
-        withMockClient{
+        withMockClient {
             meetings(it).create(
                 CreateRequest(
                     userId = USER_ID,
@@ -195,3 +200,5 @@ class DefaultMeetingsTest {
         return DefaultMeetings(ZoomModuleConfig(), auth, storage, testClock, client)
     }
 }
+
+private fun Meeting.normalize(): Meeting = copy(context = emptyContext)

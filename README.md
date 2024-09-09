@@ -296,9 +296,108 @@ The Zoom SDK allows you to manage users within your Zoom account. You can create
 TBD
 
 ## Webhooks
-The Zoom SDK allows you to receive notifications about Zoom events and take action. You can subscribe to webhooks and handle events in your application.
+The Zoom SDK allows you to receive notifications about Zoom events and take action. 
+You can subscribe to webhooks and handle events in your application.
 
-TBD
+One of the challenges of working with webhooks is that the payload can be quite large and complex.
+The Zoom SDK simplifies this by providing a way to access dynamic properties in a type-safe manner.
+
+The basic idea is to define a custom JSON serializer that extracts the relevant information from the webhook payload.
+You can then use this serializer to convert the JSON payload into a type-safe object that you can work with. 
+The Zoom SDK provides a way to register custom JSON serializers in a simple and efficient manner.
+
+Example:
+```kotlin
+// Use the `handler` DSL to define any custom fields and logic you need.
+val webhookHandler = handler {
+    // Define the fields you need from the webhook payload
+    val uuid = add { required<String>("uuid") }
+    val hostId = add { required<String>("host_id") }
+    val agenda = add { nullable<String>("agenda") }
+    val type = add { required<Int>("type", default = 1) }
+    val duration = add { required<Int>("duration") }
+  
+    // Define custom logic to handle the webhook event
+    on { event ->
+        // Access the predefined fields
+        println("Received meeting event: ${event.name}")
+        println("Event timestamp: ${event.timestamp}")
+      
+        // Access the dynamic properties
+        println("Meeting UUID: ${event.context[uuid]}")
+        println("Host ID: ${event.context[hostId]}")
+        event.context[agenda]?.let { println("Agenda: $it") }
+        println("Meeting type: ${event.context[type]}")
+        println("Meeting duration: ${event.context[duration]}")
+      
+        // Your own custom logic: Send a notification, make database updates, etc.
+    }
+}
+
+// Use the HTTP client / framework you prefer to receive the incoming webhook request
+
+// The request body of the incoming webhook parsed as a JSON string
+val json = """
+  {
+    "event": "meeting.ended",
+    "event_ts": 1658940994914,
+    "payload": {
+      "account_id": "d8u239ur932u39u2",
+      "operator": "email@example.com",
+      "operator_id": "iX3c3weri9PPuiP3",
+      "object": {
+        "uuid": "Sdghwi7erUGDy7sud",
+        "id": "123456789",
+        "host_id": "js78su3jsj28su38",
+        "topic": "My Meeting",
+        "start_time": "2023-04-01T09:00:00Z",
+        "duration": "sixty",
+        "timezone": "America/Los_Angeles",
+        "end_time": "2023-04-01T10:00:00Z",
+        "agenda": "Discussing the product launch"
+      }
+    }
+  }  
+""".trimIndent()
+val request = WebhookRequest(
+    signature = "signature",    // Use the value of the X-Zoom-Signature header, or your own signature header
+    timestamp = 1630000000,     // Use the value of the X-Zoom-Request-Timestamp header, or your own timestamp header
+    body = json                 // The JSON payload of the incoming webhook
+)
+
+// Use the webhook handler to process incoming events
+// The processing is asynchronous and non-blocking. No result is returned, the request is processed in the background.
+webhookHandler.handle(request)
+```
+Sometimes you may need to handle complex custom types. You can define a custom JSON serializer to handle these types:
+
+```kotlin
+import kotlinx.serialization.*
+
+// A custom data class your code representing a Zoom recording.
+// The only requirement is using kotlinx.serialization annotations.
+@Serializable
+data class Recording(
+    @SerialName("file_type") val fileType: String,
+    @SerialName("download_url") val downloadUrl: String,
+    @SerialName("recording_start") val start: String,
+    @SerialName("recording_end") val end: String,
+)
+
+handler {
+  // Add a custom serializer to allow the handler to parse the JSON payload  
+  val recordings = add { required<List<Recording>>("recording_files") }
+    .withSerializer(ListSerializer(Recording.serializer()))
+  
+    on { event ->
+      // Access the custom field as a list of Recording objects  
+      event.context[recordings].forEach { recording ->
+          println("Recording: ${recording.downloadUrl}")
+      }
+    }
+}
+```
+
 
 ## Rate Limiting
 The Zoom SDK includes built-in rate limiting to help you avoid being blocked by Zoom. The SDK will automatically handle rate limiting for you.
