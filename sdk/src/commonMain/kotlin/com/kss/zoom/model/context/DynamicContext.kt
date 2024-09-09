@@ -43,7 +43,6 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
                 Float::class -> value.toFloat()
                 Double::class -> value.toDouble()
                 Boolean::class -> value.toBoolean()
-                Map::class -> jsonSerializer.decodeFromString<Map<String, String>>(value)
                 else -> property.serializer?.let { jsonSerializer.decodeFromString(it, value) }
             }
             propertyValue?.let { properties[property] = property.cast(it) }

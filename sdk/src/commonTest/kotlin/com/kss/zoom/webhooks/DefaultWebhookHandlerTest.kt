@@ -286,8 +286,28 @@ class DefaultWebhookHandlerTest {
                 on { event ->
                     assertEquals("recording.completed", event.name, "Invalid event name")
                     assertEquals(1658940994914, event.timestamp, "Invalid timestamp")
-                    val files = event.context[recordings]
-                    assertEquals(3, files.size, "Invalid number of recording files")
+                    assertEquals(
+                        listOf(
+                            Recording(
+                                fileType = "MP4",
+                                downloadUrl = "https://zoom.us/recording/download/xxxx",
+                                start = "2023-04-01T09:00:00Z",
+                                end = "2023-04-01T10:00:00Z",
+                            ),
+                            Recording(
+                                fileType = "M4A",
+                                downloadUrl = "https://zoom.us/recording/download/yyyy",
+                                start = "2023-04-01T09:00:00Z",
+                                end = "2023-04-01T10:00:00Z",
+                            ),
+                            Recording(
+                                fileType = "CHAT",
+                                downloadUrl = "https://zoom.us/recording/download/zzzz",
+                                start = "2023-04-01T09:00:00Z",
+                                end = "2023-04-01T10:00:00Z",
+                            ),
+                        ), event.context[recordings], "Invalid recording files"
+                    )
                     eventQueue.add(event)
                 }
             }
