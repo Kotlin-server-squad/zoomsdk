@@ -1,6 +1,6 @@
 package com.kss.zoom.common.validation
 
-import com.kss.zoom.model.validation.ValidationResult
+import com.kss.zoom.model.ValidationResult
 import kotlin.coroutines.cancellation.CancellationException
 
 suspend fun <T> call(block: suspend () -> ValidationResult<T>): T {

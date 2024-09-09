@@ -3,7 +3,7 @@ package com.kss.zoom.webhooks
 import com.kss.zoom.common.tryCall
 import com.kss.zoom.model.api.event.Event
 import com.kss.zoom.model.request.WebhookRequest
-import com.kss.zoom.model.validation.ValidationResult
+import com.kss.zoom.model.ValidationResult
 import kotlinx.serialization.json.Json
 
 class DefaultWebhookVerifier: WebhookVerifier {
