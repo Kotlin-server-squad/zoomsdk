@@ -374,7 +374,7 @@ Sometimes you may need to handle complex custom types. You can define a custom J
 ```kotlin
 import kotlinx.serialization.*
 
-// A custom data class your code representing a Zoom recording.
+// A custom data class in your code representing a Zoom recording.
 // The only requirement is using kotlinx.serialization annotations.
 @Serializable
 data class Recording(
