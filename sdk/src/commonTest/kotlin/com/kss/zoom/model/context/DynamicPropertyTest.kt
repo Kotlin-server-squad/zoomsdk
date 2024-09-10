@@ -3,7 +3,6 @@ package com.kss.zoom.model.context
 import com.kss.zoom.model.context.DynamicProperty.Companion.fromDefaultSupplier
 import com.kss.zoom.model.context.DynamicProperty.Companion.nullable
 import com.kss.zoom.model.context.DynamicProperty.Companion.required
-import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -56,16 +55,17 @@ class DynamicPropertyTest {
 
     @Test
     fun `should create dynamic property with custom serializer`() {
-        val property = required<CustomData>("data").withSerializer(CustomData.serializer())
+        val default = CustomData(1, "value")
+        val property = required<CustomData>("data", default).withSerializer(CustomData.serializer())
         assertEquals("data", property.name, "Data should be the same")
         assertEquals(CustomData::class, property.type, "Type should be the same")
-        assertFailsWith(
-            exceptionClass = IllegalStateException::class,
-            message = "Property name is required",
-            block = { property.default() },
-        )
+        assertEquals(default, property.default(), "Default value should be the same")
+    }
+
+    @Test
+    fun `should cast dynamic property value`() {
+        assertEquals("value", required<String>("name").cast("value"), "Value should be the same")
+        assertEquals(1, required<Int>("count").cast(1), "Value should be the same")
+        assertEquals(true, required<Boolean>("bool").cast(true), "Value should be the same")
     }
 }
-
-@Serializable
-data class CustomData(val id: Long, val value: String)

@@ -13,7 +13,7 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
         properties.forEach { put(it.property, it.value) }
     }
 
-    private val unsetProperties = ArrayDeque<DynamicProperty<*>>()
+    private val unsetProperties = mutableListOf<DynamicProperty<*>>()
 
     fun fromMap(map: Map<String, String>): DynamicContext {
         map.forEach { (key, value) ->
