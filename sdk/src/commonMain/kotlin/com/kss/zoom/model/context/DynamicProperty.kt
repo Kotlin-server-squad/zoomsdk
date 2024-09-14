@@ -29,7 +29,7 @@ interface DynamicProperty<T> {
 
         inline fun <reified T> required(name: String, default: T) = fromDefaultSupplier(name) { default }
 
-        inline fun <reified T> nullable(name: String) = DynamicProperty<T?>(name, null)
+        inline fun <reified T> nullable(name: String) = fromDefaultSupplier<T?>(name) { null }
 
     }
 

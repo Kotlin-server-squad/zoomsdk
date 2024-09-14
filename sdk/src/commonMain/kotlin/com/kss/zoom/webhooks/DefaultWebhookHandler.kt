@@ -13,6 +13,12 @@ class DefaultWebhookHandler(
     private val verifier: WebhookVerifier = DefaultWebhookVerifier(),
 ) : WebhookHandler {
 
+    companion object {
+        fun webhook(eventType: String, eventHandler: () -> EventHandler): WebhookHandler {
+            return DefaultWebhookHandler().register(eventType, eventHandler())
+        }
+    }
+
     private val handlers = mutableMapOf<EventType, EventHandler>()
 
     private var errorHandler: suspend (WebhookRequest, Throwable) -> Unit = { _, _ -> }

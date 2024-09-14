@@ -1,5 +1,6 @@
 package com.kss.zoom.model.context
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 
 class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
@@ -32,6 +33,8 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
         return this
     }
 
+    override fun toString(): String = properties.map { it.key.name to it.value }.toMap().toString()
+
     private fun cast(property: DynamicProperty<*>, value: String) {
         try {
             val propertyValue = when (property.type) {
@@ -43,6 +46,7 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
                 Float::class -> value.toFloat()
                 Double::class -> value.toDouble()
                 Boolean::class -> value.toBoolean()
+                Instant::class -> Instant.parse(value)
                 else -> property.serializer?.let { jsonSerializer.decodeFromString(it, value) }
             }
             propertyValue?.let { properties[property] = property.cast(it) }
