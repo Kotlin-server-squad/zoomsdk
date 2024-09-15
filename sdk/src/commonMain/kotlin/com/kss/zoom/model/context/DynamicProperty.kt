@@ -19,6 +19,23 @@ interface DynamicProperty<T> {
                 override fun cast(value: Any?): T = value as T
                 override fun default(): T = default()
                 override val type = T::class
+
+                override fun equals(other: Any?): Boolean {
+                    if (this === other) return true
+                    if (other == null || this::class != other::class) return false
+                    other as DynamicProperty<*>
+
+                    if (name != other.name) return false
+                    if (type != other.type) return false
+
+                    return true
+                }
+
+                override fun hashCode(): Int {
+                    var result = name.hashCode()
+                    result = 31 * result + type.hashCode()
+                    return result
+                }
             }
 
         inline operator fun <reified T> invoke(name: String, default: T) = fromDefaultSupplier(name) { default }
@@ -29,7 +46,7 @@ interface DynamicProperty<T> {
 
         inline fun <reified T> required(name: String, default: T) = fromDefaultSupplier(name) { default }
 
-        inline fun <reified T> nullable(name: String) = DynamicProperty<T?>(name, null)
+        inline fun <reified T> nullable(name: String) = fromDefaultSupplier<T?>(name) { null }
 
     }
 

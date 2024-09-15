@@ -20,3 +20,4 @@ dependencyResolutionManagement {
 rootProject.name = "zoom-sdk"
 include(":sdk")
 include(":integrationTest")
+include(":examples")

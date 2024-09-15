@@ -1,6 +1,10 @@
 package com.kss.zoom.model.context
 
+import kotlinx.datetime.Instant
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
 
 class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
 
@@ -32,6 +36,10 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
         return this
     }
 
+
+    override fun toString(): String = properties.map { it.key.name to it.value }.toMap().toString()
+
+    @OptIn(ExperimentalSerializationApi::class)
     private fun cast(property: DynamicProperty<*>, value: String) {
         try {
             val propertyValue = when (property.type) {
@@ -43,11 +51,18 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
                 Float::class -> value.toFloat()
                 Double::class -> value.toDouble()
                 Boolean::class -> value.toBoolean()
-                else -> property.serializer?.let { jsonSerializer.decodeFromString(it, value) }
+                Instant::class -> Instant.parse(value)
+                else -> property.serializer?.let {
+                    if (it.descriptor.kind is PrimitiveKind) {
+                        jsonSerializer.decodeFromJsonElement(it, JsonPrimitive(value))
+                    } else {
+                        jsonSerializer.decodeFromString(it, value)
+                    }
+                } ?: property.cast(value)
             }
             propertyValue?.let { properties[property] = property.cast(it) }
         } catch (e: Exception) {
-            // Ignore invalid values
+            throw IllegalArgumentException("Error casting property ${property.name} to type ${property.type.qualifiedName} with value $value")
         }
     }
 
@@ -74,6 +89,24 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
     }
 
     operator fun <T> DynamicProperty<T>.minus(value: T) = set(this, value)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as DynamicContext
+
+        if (properties != other.properties) return false
+        if (unsetProperties != other.unsetProperties) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = properties.hashCode()
+        result = 31 * result + unsetProperties.hashCode()
+        return result
+    }
 }
 
 fun context(init: DynamicContext.() -> Unit) = DynamicContext().apply(init)
