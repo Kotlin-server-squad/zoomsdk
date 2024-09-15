@@ -1,6 +1,5 @@
 package com.kss.zoom.examples.webhooks
 
-import com.kss.zoom.common.event.DefaultEventHandler.Companion.handler
 import com.kss.zoom.model.context.DynamicProperty.Companion.required
 import com.kss.zoom.model.context.withSerializer
 import com.kss.zoom.webhooks.DefaultWebhookHandler.Companion.webhook
@@ -31,9 +30,12 @@ data class LiveStreaming(
     )
 }
 
-fun main() = withLogger("MeetingEndedEvent") { logger ->
-    webhook("meeting.live_streaming_started") {
-        handler {
+fun main() = withLogger("SingleEvent2") { logger ->
+    webhook {
+        onError { webhookRequest, throwable ->
+            logger.error("Error handling webhook request: $webhookRequest", throwable)
+        }
+        handler("meeting.live_streaming_started") {
             val uuid = add<String> { required("uuid") }
             val startTime = add<Instant> { required("start_time") }
             val liveStreaming = add<LiveStreaming> { required("live_streaming") }

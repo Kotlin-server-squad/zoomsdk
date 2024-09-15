@@ -1,7 +1,10 @@
 package com.kss.zoom.model.context
 
 import kotlinx.datetime.Instant
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
 
 class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
 
@@ -35,6 +38,7 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
 
     override fun toString(): String = properties.map { it.key.name to it.value }.toMap().toString()
 
+    @OptIn(ExperimentalSerializationApi::class)
     private fun cast(property: DynamicProperty<*>, value: String) {
         try {
             val propertyValue = when (property.type) {
@@ -47,11 +51,17 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
                 Double::class -> value.toDouble()
                 Boolean::class -> value.toBoolean()
                 Instant::class -> Instant.parse(value)
-                else -> property.serializer?.let { jsonSerializer.decodeFromString(it, value) }
+                else -> property.serializer?.let {
+                    if (it.descriptor.kind is PrimitiveKind) {
+                        jsonSerializer.decodeFromJsonElement(it, JsonPrimitive(value))
+                    } else {
+                        jsonSerializer.decodeFromString(it, value)
+                    }
+                } ?: property.cast(value)
             }
             propertyValue?.let { properties[property] = property.cast(it) }
         } catch (e: Exception) {
-            // Ignore invalid values
+            throw IllegalArgumentException("Error casting property ${property.name} to type ${property.type.qualifiedName} with value $value")
         }
     }
 

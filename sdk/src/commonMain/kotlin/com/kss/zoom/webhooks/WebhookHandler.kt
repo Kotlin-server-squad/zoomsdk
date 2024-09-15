@@ -12,8 +12,11 @@ interface WebhookHandler {
 
     // When a verification fails or when an error occurs during the handling of a webhook request
     // the onError block will be called. You can use it to queue up the original request in a DLQ, for example.
-    suspend fun onError(block: suspend (WebhookRequest, Throwable) -> Unit)
+    fun onError(block: suspend (WebhookRequest, Throwable) -> Unit): WebhookHandler
 
     // Entry point for handling incoming webhook requests
     suspend fun handle(request: WebhookRequest)
+
+    // Register a new event type and its corresponding handler.
+    fun handler(eventType: String, handler: EventHandler.() -> Unit)
 }
