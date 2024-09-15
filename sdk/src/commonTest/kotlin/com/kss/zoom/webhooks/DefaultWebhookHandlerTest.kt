@@ -1,7 +1,7 @@
 package com.kss.zoom.webhooks
 
 import com.kss.zoom.common.event.DefaultEventHandler.Companion.handler
-import com.kss.zoom.common.event.EventHandler
+import com.kss.zoom.common.event.DynamicEventHandler
 import com.kss.zoom.model.context.DynamicProperty.Companion.required
 import com.kss.zoom.model.context.withSerializer
 import com.kss.zoom.model.event.Event
@@ -129,7 +129,7 @@ class DefaultWebhookHandlerTest {
     }
 
     @Test
-    fun `should use default value for invalid properties`() = runTest {
+    fun `should fail if property value doesn't match the expected data type`() = runTest {
         handleWebhook(
             eventType = "meeting.ended",
             payload = """
@@ -171,8 +171,8 @@ class DefaultWebhookHandlerTest {
                 }
             }
         )
-        // check that the event was handled
-        verifySuccess()
+        // check that the event failed
+        verifyFailure()
     }
 
     @Test
@@ -319,7 +319,7 @@ class DefaultWebhookHandlerTest {
     private suspend fun handleWebhook(
         eventType: String,
         payload: String,
-        eventHandler: EventHandler,
+        eventHandler: DynamicEventHandler,
     ) {
         val handler = DefaultWebhookHandler().register(eventType, eventHandler)
         handler.onError { request, throwable ->

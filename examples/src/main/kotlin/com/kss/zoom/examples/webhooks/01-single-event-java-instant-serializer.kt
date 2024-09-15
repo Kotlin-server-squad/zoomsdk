@@ -12,16 +12,16 @@ fun main() = withLogger("SingleEvent1") { logger ->
             logger.error("Error handling webhook request: $webhookRequest", throwable)
         }
         handler("meeting.ended") {
-            val uuid = add<String> { required("uuid") }
-            val hostId = add<String> { required("host_id") }
-            val topic = add<String> { required("topic") }
-            val type = add<Int> { required("type") }
-            val startTime = add<java.time.Instant> { required("start_time") }
+            val uuid = add { required<String>("uuid") }
+            val hostId = add { required<String>("host_id") }
+            val topic = add { required<String>("topic") }
+            val type = add { required<Int>("type") }
+            val startTime = add { required<java.time.Instant>("start_time") }
                 .withSerializer(InstantSerializer)
-            val endTime = add<java.time.Instant> { required("end_time") }
+            val endTime = add { required<java.time.Instant>("end_time") }
                 .withSerializer(InstantSerializer)
-            val duration = add<Int> { required("duration") }
-            val timezone = add<String?> { nullable("timezone") }
+            val duration = add { required<Int>("duration") }
+            val timezone = add { nullable<String?>("timezone") }
             on { event ->
                 logger.info("Event: $event")
                 logger.info("Received event {} at {}", event.name, event.timestamp)

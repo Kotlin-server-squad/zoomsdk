@@ -36,6 +36,7 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
         return this
     }
 
+
     override fun toString(): String = properties.map { it.key.name to it.value }.toMap().toString()
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -88,6 +89,24 @@ class DynamicContext(vararg properties: DynamicPropertyValue<*>) {
     }
 
     operator fun <T> DynamicProperty<T>.minus(value: T) = set(this, value)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as DynamicContext
+
+        if (properties != other.properties) return false
+        if (unsetProperties != other.unsetProperties) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = properties.hashCode()
+        result = 31 * result + unsetProperties.hashCode()
+        return result
+    }
 }
 
 fun context(init: DynamicContext.() -> Unit) = DynamicContext().apply(init)

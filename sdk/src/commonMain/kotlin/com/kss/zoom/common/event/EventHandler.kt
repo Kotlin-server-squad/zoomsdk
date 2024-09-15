@@ -5,13 +5,12 @@ import com.kss.zoom.model.event.Event
 import com.kss.zoom.model.api.event.Event as ApiEvent
 
 interface EventHandler {
+    // Handle the fully initialized event.
+    suspend fun on(event: Event)
 
-    // This is where you parse the event to your custom business object of type T
-    // and then call the block with the parsed object to do whatever you need to do with it.
-    fun on(block: suspend (Event) -> Unit)
+    // This is where you receive the raw event as per the Zoom API.
     suspend fun on(event: ApiEvent)
 
-    // This is where you add a new property to the context of the event.
-    fun <P> add(block: () -> DynamicProperty<P>): DynamicProperty<P>
+    // This is where you add a new property to the event context.
+    fun <T> add(block: () -> DynamicProperty<T>): DynamicProperty<T>
 }
-

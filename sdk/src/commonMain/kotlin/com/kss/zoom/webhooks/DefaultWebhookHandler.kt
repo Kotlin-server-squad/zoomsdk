@@ -1,6 +1,7 @@
 package com.kss.zoom.webhooks
 
 import com.kss.zoom.common.event.DefaultEventHandler.Companion.handler
+import com.kss.zoom.common.event.DynamicEventHandler
 import com.kss.zoom.common.event.EventHandler
 import com.kss.zoom.common.tryCall
 import com.kss.zoom.common.validation.call
@@ -20,8 +21,8 @@ class DefaultWebhookHandler(
 
     private var errorHandler: suspend (WebhookRequest, Throwable) -> Unit = { _, _ -> }
 
-    override fun register(eventType: EventType, mapper: EventHandler): WebhookHandler {
-        handlers[eventType] = mapper
+    override fun register(eventType: EventType, eventHandler: EventHandler): WebhookHandler {
+        handlers[eventType] = eventHandler
         return this
     }
 
@@ -40,7 +41,7 @@ class DefaultWebhookHandler(
 
     }
 
-    override fun handler(eventType: String, handler: EventHandler.() -> Unit) {
+    override fun handler(eventType: String, handler: DynamicEventHandler.() -> Unit) {
         this.register(eventType, handler(handler))
     }
 }

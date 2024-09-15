@@ -36,9 +36,9 @@ fun main() = withLogger("SingleEvent2") { logger ->
             logger.error("Error handling webhook request: $webhookRequest", throwable)
         }
         handler("meeting.live_streaming_started") {
-            val uuid = add<String> { required("uuid") }
-            val startTime = add<Instant> { required("start_time") }
-            val liveStreaming = add<LiveStreaming> { required("live_streaming") }
+            val uuid = add { required<String>("uuid") }
+            val startTime = add { required<Instant>("start_time") }
+            val liveStreaming = add { required<LiveStreaming>("live_streaming") }
                 .withSerializer(LiveStreaming.serializer())
 
             on { event ->
