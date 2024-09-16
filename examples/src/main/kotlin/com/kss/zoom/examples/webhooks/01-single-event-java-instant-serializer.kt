@@ -8,8 +8,8 @@ import com.kss.zoom.webhooks.DefaultWebhookHandler.Companion.webhook
 
 fun main() = withLogger("SingleEvent1") { logger ->
     webhook {
-        onError { webhookRequest, throwable ->
-            logger.error("Error handling webhook request: $webhookRequest", throwable)
+        onError { request, throwable ->
+            logger.error("Error handling webhook request: $request", throwable)
         }
         handler("meeting.ended") {
             val uuid = add { required<String>("uuid") }

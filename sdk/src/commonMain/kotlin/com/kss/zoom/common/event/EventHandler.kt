@@ -2,7 +2,7 @@ package com.kss.zoom.common.event
 
 import com.kss.zoom.model.context.DynamicProperty
 import com.kss.zoom.model.event.Event
-import com.kss.zoom.model.api.event.Event as ApiEvent
+import com.kss.zoom.model.api.Event as ApiEvent
 
 interface EventHandler {
     // Handle the fully initialized event.

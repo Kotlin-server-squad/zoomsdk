@@ -15,10 +15,10 @@ interface DynamicProperty<T> {
         inline fun <reified T> fromDefaultSupplier(name: String, crossinline default: () -> T) =
             object : DynamicProperty<T> {
                 override val name = name
+                override val type = T::class
                 override var serializer: KSerializer<T>? = null
                 override fun cast(value: Any?): T = value as T
                 override fun default(): T = default()
-                override val type = T::class
 
                 override fun equals(other: Any?): Boolean {
                     if (this === other) return true
