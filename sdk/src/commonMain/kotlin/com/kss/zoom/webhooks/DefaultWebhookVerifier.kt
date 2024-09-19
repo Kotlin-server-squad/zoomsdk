@@ -14,8 +14,8 @@ class DefaultWebhookVerifier: WebhookVerifier {
     }
 
     override suspend fun verify(request: WebhookRequest): ValidationResult<Event> {
-        return tryCall({ throwable ->
-            val message = "Failed to verify webhook request: ${throwable.message ?: "Unknown error"}"
+        return tryCall({ exception ->
+            val message = "Failed to verify webhook request: ${exception.message ?: "Unknown error"}"
             ValidationResult.Error(message)
         }) {
             // TODO Implement verification logic

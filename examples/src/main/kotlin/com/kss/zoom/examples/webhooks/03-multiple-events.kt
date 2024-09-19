@@ -47,8 +47,8 @@ data class WebinarRegistrant(
 
 fun main() = withLogger("MultipleEvents") { logger ->
     val webhookHandler = webhook {
-        onError { webhookRequest, throwable ->
-            logger.error("Error handling webhook request: $webhookRequest", throwable)
+        onError { webhookRequest, exception ->
+            logger.error("Error handling webhook request: $webhookRequest", exception)
         }
         handler("meeting.participant_joined") {
             val participant = add { required<ParticipantAdmitted>("participant") }

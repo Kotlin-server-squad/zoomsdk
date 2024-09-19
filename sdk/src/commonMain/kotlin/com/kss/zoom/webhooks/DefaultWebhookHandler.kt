@@ -19,14 +19,14 @@ class DefaultWebhookHandler(
 
     private val handlers = mutableMapOf<EventType, EventHandler>()
 
-    private var errorHandler: suspend (WebhookRequest, Throwable) -> Unit = { _, _ -> }
+    private var errorHandler: suspend (WebhookRequest, Exception) -> Unit = { _, _ -> }
 
     override fun register(eventType: EventType, eventHandler: EventHandler): WebhookHandler {
         handlers[eventType] = eventHandler
         return this
     }
 
-    override fun onError(block: suspend (WebhookRequest, Throwable) -> Unit): WebhookHandler {
+    override fun onError(block: suspend (WebhookRequest, Exception) -> Unit): WebhookHandler {
         errorHandler = block
         return this
     }

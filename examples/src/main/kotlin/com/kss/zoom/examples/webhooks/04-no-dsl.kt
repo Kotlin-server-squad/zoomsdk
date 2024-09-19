@@ -17,8 +17,8 @@ import org.slf4j.LoggerFactory
 fun main() = withLogger("NoDslWebhookHandler") { logger ->
     val webhookHandler = DefaultWebhookHandler()
     webhookHandler
-        .onError { request, throwable ->
-            logger.error("Error handling webhook request: $request", throwable)
+        .onError { request, exception ->
+            logger.error("Error handling webhook request: $request", exception)
         }
         .register("meeting.ended", MeetingEndedEventHandler())
         .register("meeting.live_streaming_started", LiveStreamingStartedEventHandler())

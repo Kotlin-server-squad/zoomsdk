@@ -21,7 +21,7 @@ class DefaultWebhookHandlerTest {
     private val eventQueue = mutableListOf<Event>()
 
     // Events that failed to process are added to the dead letter queue
-    private val dlq = mutableMapOf<WebhookRequest, Throwable>()
+    private val dlq = mutableMapOf<WebhookRequest, Exception>()
 
     @AfterTest
     fun tearDown() {
@@ -322,8 +322,8 @@ class DefaultWebhookHandlerTest {
         eventHandler: DynamicEventHandler,
     ) {
         val handler = DefaultWebhookHandler().register(eventType, eventHandler)
-        handler.onError { request, throwable ->
-            dlq[request] = throwable
+        handler.onError { request, exception ->
+            dlq[request] = exception
         }
         handler.handle(WebhookRequest("signature", 1234567890, payload))
     }

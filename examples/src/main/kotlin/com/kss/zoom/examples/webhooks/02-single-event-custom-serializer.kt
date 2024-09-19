@@ -32,8 +32,8 @@ data class LiveStreaming(
 
 fun main() = withLogger("SingleEvent2") { logger ->
     webhook {
-        onError { webhookRequest, throwable ->
-            logger.error("Error handling webhook request: $webhookRequest", throwable)
+        onError { webhookRequest, exception ->
+            logger.error("Error handling webhook request: $webhookRequest", exception)
         }
         handler("meeting.live_streaming_started") {
             val uuid = add { required<String>("uuid") }

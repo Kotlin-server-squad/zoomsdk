@@ -16,7 +16,7 @@ suspend fun <T> tryCall(block: suspend  () -> ValidationResult<T>): ValidationRe
     } catch (e: CancellationException) {
         // Respect cancellation
         throw e
-    } catch (t: Throwable) {
-        ValidationResult.Error(t.message ?: "Unknown error")
+    } catch (e: Exception) {
+        ValidationResult.Error(e.message ?: "Unknown error")
     }
 }

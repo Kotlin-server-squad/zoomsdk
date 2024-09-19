@@ -16,19 +16,19 @@ suspend fun <T> tryCall(block: suspend () -> CallResult<T>): CallResult<T> {
     } catch (e: CancellationException) {
         // Respect cancellation
         throw e
-    } catch (t: Throwable) {
-        CallResult.Error.Other(t.message ?: "Unknown error")
+    } catch (e: Exception) {
+        CallResult.Error.Other(e.message ?: "Unknown error")
     }
 }
 
-suspend fun <T> tryCall(onError: suspend (Throwable) -> T, block: suspend () -> T): T {
+suspend fun <T> tryCall(onError: suspend (Exception) -> T, block: suspend () -> T): T {
     return try {
         block()
     } catch (e: CancellationException) {
         // Respect cancellation
         throw e
-    } catch (t: Throwable) {
-        onError(t)
+    } catch (e: Exception) {
+        onError(e)
     }
 }
 
