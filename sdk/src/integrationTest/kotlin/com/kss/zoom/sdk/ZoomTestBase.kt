@@ -23,6 +23,7 @@ abstract class ZoomTestBase {
     private val zoom = Zoom.create(
         clientId = CLIENT_ID,
         clientSecret = CLIENT_SECRET
+
     )
 
     private val userTokens = userTokens()

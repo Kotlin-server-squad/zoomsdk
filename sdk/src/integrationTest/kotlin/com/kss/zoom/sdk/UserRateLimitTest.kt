@@ -106,7 +106,7 @@ class UserRateLimitTest : ZoomTestBase() {
             firstName = "Mattie",
             lastName = "Melendez",
             displayName = "MattieMelendez",
-            type = Type.BASIC,
+            type = Type.,
             action = Action.CREATE
         )
     }

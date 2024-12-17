@@ -1,6 +1,7 @@
 package com.kss.zoom.sdk.common
 
-const val ZOOM_API_URL = "https://api.zoom.us/v2"
+//const val ZOOM_API_URL = "https://api.zoom.us/v2"
+const val ZOOM_API_URL = "http://localhost:8991/v2"
 
 object SupportedEvents {
     object Meeting {
