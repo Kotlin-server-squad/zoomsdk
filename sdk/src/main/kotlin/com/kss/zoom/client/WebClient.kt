@@ -93,6 +93,20 @@ class WebClient private constructor(val client: HttpClient, val correlationIdHea
             }
         }
 
+    suspend inline fun <reified T> update(
+        url: String,
+        token: String,
+        contentType: String?,
+        body: Any?
+    ): Result<T> =
+        runCoCatching {
+            client.patch(url) {
+                header(correlationIdHeader, getOrCreateCorrelationId())
+                bearerAuth(token)
+                contentType(contentType)
+                body?.let { setBody(it) }
+            }.body()
+        }
     fun HttpRequestBuilder.contentType(contentType: String?): HttpRequestBuilder {
         val parsedContentType = contentType?.let { ContentType.parse(it) } ?: ContentType.Application.Json
         contentType(parsedContentType)
